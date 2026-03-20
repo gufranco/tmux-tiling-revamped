@@ -105,18 +105,175 @@ All tmux commands from a single layout application are batched into one `tmux` i
 
 ## Layouts
 
-| Layout | Description |
-|:-------|:------------|
-| dwindle | BSP cascade toward a corner. 16 orientations via `[t\|b][l\|r][h\|v][c\|s]` flags |
-| spiral | BSP with split direction rotating every ~5 panes |
-| grid | Even N x M grid using tmux's tiled layout |
-| main-center | Wide center pane with narrower side panes |
-| monocle | Zoom focused pane to fill window. Toggles back to previous layout |
-| deck | All panes full-height at equal widths |
+### Dwindle
 
-### BSP Orientation Flags
+BSP cascade toward a corner. Each new pane takes half of the remaining space. The master pane holds the largest area, and subsequent panes get progressively smaller.
 
-The dwindle and spiral layouts accept a 4-character orientation string. Default: `brvc`.
+**2 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │                   │
+│                   │                   │
+│         1         │         2         │
+│                   │                   │
+│                   │                   │
+└───────────────────┴───────────────────┘
+```
+
+**3 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │                   │
+│                   │         2         │
+│         1         │                   │
+│                   ├───────────────────┤
+│                   │                   │
+│                   │         3         │
+└───────────────────┴───────────────────┘
+```
+
+**4 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │                   │
+│                   │         2         │
+│         1         │                   │
+│                   ├─────────┬─────────┤
+│                   │         │         │
+│                   │    3    │    4    │
+└───────────────────┴─────────┴─────────┘
+```
+
+**5 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │         2         │
+│                   │                   │
+│         1         ├─────────┬─────────┤
+│                   │         │    4    │
+│                   │    3    ├─────────┤
+│                   │         │    5    │
+└───────────────────┴─────────┴─────────┘
+```
+
+### Spiral
+
+Same BSP algorithm as dwindle, but the split direction rotates every few panes, creating a spiral convergence pattern instead of a straight cascade toward a corner.
+
+**5 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │         2         │
+│                   │                   │
+│         1         ├───────────────────┤
+│                   │         3         │
+│                   ├─────────┬─────────┤
+│                   │    5    │    4    │
+└───────────────────┴─────────┴─────────┘
+```
+
+Note how pane 5 appears to the left of pane 4. In the dwindle layout, pane 4 would be on top with 5 below. The spiral trajectory reverses the direction at that depth, creating the inward rotation.
+
+### Grid
+
+Even N x M grid. Uses tmux's built-in tiled layout for fair distribution.
+
+**4 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │                   │
+│         1         │         2         │
+│                   │                   │
+├───────────────────┼───────────────────┤
+│                   │                   │
+│         3         │         4         │
+│                   │                   │
+└───────────────────┴───────────────────┘
+```
+
+**6 panes**
+
+```
+┌────────────┬─────────────┬────────────┐
+│            │             │            │
+│     1      │      2      │     3      │
+│            │             │            │
+├────────────┼─────────────┼────────────┤
+│            │             │            │
+│     4      │      5      │     6      │
+│            │             │            │
+└────────────┴─────────────┴────────────┘
+```
+
+### Main-Center
+
+Wide center pane for the primary task, narrow side panes for secondary content. The center ratio is configurable via `@tiling_revamped_main_center_ratio`.
+
+**3 panes**
+
+```
+┌───────┬───────────────────────┬───────┐
+│       │                       │       │
+│       │                       │       │
+│   2   │           1           │   3   │
+│       │                       │       │
+│       │                       │       │
+└───────┴───────────────────────┴───────┘
+```
+
+**5 panes**
+
+```
+┌───────┬───────────────────────┬───────┐
+│       │                       │   3   │
+│       │                       ├───────┤
+│   2   │           1           │   4   │
+│       │                       ├───────┤
+│       │                       │   5   │
+└───────┴───────────────────────┴───────┘
+```
+
+### Monocle
+
+Zoom the focused pane to fill the entire window. Other panes are hidden behind the zoom. Press the same key again to toggle back to the previous layout.
+
+```
+┌───────────────────────────────────────┐
+│                                       │
+│                                       │
+│               1 [zoom]                │
+│                                       │
+│                                       │
+│                                       │
+└───────────────────────────────────────┘
+        panes 2, 3, 4 behind zoom
+```
+
+### Deck
+
+All panes at full height, side by side at equal widths. Each pane is a "card" in the deck.
+
+**3 panes**
+
+```
+┌────────────┬─────────────┬────────────┐
+│            │             │            │
+│            │             │            │
+│     1      │      2      │     3      │
+│            │             │            │
+│            │             │            │
+└────────────┴─────────────┴────────────┘
+```
+
+## BSP Orientation Flags
+
+The dwindle and spiral layouts accept a 4-character orientation string that controls where panes cascade. Default: `brvc`.
 
 | Position | Options | Meaning |
 |:---------|:--------|:--------|
@@ -125,7 +282,301 @@ The dwindle and spiral layouts accept a 4-character orientation string. Default:
 | 3 | `h` / `v` | Horizontal or vertical branch direction |
 | 4 | `c` / `s` | Corner or spiral trajectory |
 
-This produces 16 distinct arrangements: `tlvc`, `trvc`, `blvc`, `brvc`, `tlvs`, `trvs`, `blvs`, `brvs`, `tlhc`, `trhc`, `blhc`, `brhc`, `tlhs`, `trhs`, `blhs`, `brhs`.
+This produces 16 distinct arrangements. Here are the four most visually distinct variants with 4 panes:
+
+**`brvc`** bottom-right, vertical, corner (default)
+
+```
+┌───────────┬───────────┐
+│           │     2     │
+│     1     ├─────┬─────┤
+│           │  3  │  4  │
+└───────────┴─────┴─────┘
+```
+
+**`tlvc`** top-left, vertical, corner
+
+```
+┌─────┬─────┬───────────┐
+│  4  │  3  │           │
+├─────┴─────┤     1     │
+│     2     │           │
+└───────────┴───────────┘
+```
+
+**`brhc`** bottom-right, horizontal, corner
+
+```
+┌───────────────────────┐
+│           1           │
+├───────────┬───────────┤
+│           │     3     │
+│     2     ├───────────┤
+│           │     4     │
+└───────────┴───────────┘
+```
+
+**`blvc`** bottom-left, vertical, corner
+
+```
+┌───────────┬───────────┐
+│     2     │           │
+├─────┬─────┤     1     │
+│  4  │  3  │           │
+└─────┴─────┴───────────┘
+```
+
+## Operations
+
+### Promote
+
+Swap the focused pane with the master pane. If the focused pane is already master, demote it to position 2.
+
+**Before** - pane C is focused:
+
+```
+┌───────────┬───────────┐
+│           │     B     │
+│     A     ├─────┬─────┤
+│           │ [C] │  D  │
+└───────────┴─────┴─────┘
+```
+
+**After** - pane C is now master:
+
+```
+┌───────────┬───────────┐
+│           │     B     │
+│     C     ├─────┬─────┤
+│           │  A  │  D  │
+└───────────┴─────┴─────┘
+```
+
+### Rotate
+
+Rotate the BSP orientation by 90, 180, or 270 degrees. This swaps the branch direction between vertical and horizontal splits.
+
+**Before** `brvc` - vertical branches:
+
+```
+┌───────────┬───────────┐
+│           │     2     │
+│     1     ├─────┬─────┤
+│           │  3  │  4  │
+└───────────┴─────┴─────┘
+```
+
+**After** `brhc` - rotated 90, horizontal branches:
+
+```
+┌───────────────────────┐
+│           1           │
+├───────────┬───────────┤
+│           │     3     │
+│     2     ├───────────┤
+│           │     4     │
+└───────────┴───────────┘
+```
+
+### Flip
+
+Mirror the layout along one axis. Flip horizontal swaps left/right, flip vertical swaps top/bottom.
+
+**Before** `brvc` - cascade toward bottom-right:
+
+```
+┌───────────┬───────────┐
+│           │     2     │
+│     1     ├─────┬─────┤
+│           │  3  │  4  │
+└───────────┴─────┴─────┘
+```
+
+**After** `blvc` - flipped horizontal, cascade toward bottom-left:
+
+```
+┌───────────┬───────────┐
+│     2     │           │
+├─────┬─────┤     1     │
+│  4  │  3  │           │
+└─────┴─────┴───────────┘
+```
+
+### Circulate
+
+Shift all pane contents one position forward or backward through the layout slots. The layout topology stays the same, only the content moves.
+
+**Before:**
+
+```
+┌───────────┬───────────┐
+│           │     B     │
+│     A     ├─────┬─────┤
+│           │  C  │  D  │
+└───────────┴─────┴─────┘
+```
+
+**After** circulate next:
+
+```
+┌───────────┬───────────┐
+│           │     A     │
+│     D     ├─────┬─────┤
+│           │  B  │  C  │
+└───────────┴─────┴─────┘
+```
+
+### Balance
+
+Equalize all pane sizes while preserving the current layout topology.
+
+**Before** - uneven sizes:
+
+```
+┌──────────────────┬────┐
+│                  │ 2  │
+│        1         ├──┬─┤
+│                  │3 │4│
+└──────────────────┴──┴─┘
+```
+
+**After** - balanced:
+
+```
+┌───────────┬───────────┐
+│           │     2     │
+│     1     ├─────┬─────┤
+│           │  3  │  4  │
+└───────────┴─────┴─────┘
+```
+
+### Equalize
+
+Ignore the current layout and distribute all panes evenly along one axis.
+
+```
+┌───────────────────────┐
+│           1           │
+├───────────────────────┤
+│           2           │
+├───────────────────────┤
+│           3           │
+├───────────────────────┤
+│           4           │
+└───────────────────────┘
+```
+
+### Autosplit
+
+Split the focused pane along its longest axis. Wide panes split horizontally, tall panes split vertically.
+
+**Wide pane** - splits horizontally:
+
+```
+┌─────────────────────┐      ┌──────────┬──────────┐
+│                     │      │          │          │
+│     wide pane       │  ->  │   left   │  right   │
+│                     │      │          │          │
+└─────────────────────┘      └──────────┴──────────┘
+```
+
+**Tall pane** - splits vertically:
+
+```
+┌──────────┐      ┌──────────┐
+│          │      │   top    │
+│   tall   │  ->  ├──────────┤
+│   pane   │      │  bottom  │
+│          │      │          │
+└──────────┘      └──────────┘
+```
+
+### Focus-Resize
+
+When enabled, the focused pane automatically expands toward the golden ratio on every focus change. Other panes shrink proportionally.
+
+**Before** - pane 3 receives focus:
+
+```
+┌───────────┬───────────┐
+│           │     2     │
+│     1     ├─────┬─────┤
+│           │ [3] │  4  │
+└───────────┴─────┴─────┘
+```
+
+**After** - pane 3 expanded to 62% ratio:
+
+```
+┌──────┬────────────────┐
+│      │       2        │
+│  1   ├────────────┬───┤
+│      │    [3]     │ 4 │
+└──────┴────────────┴───┘
+```
+
+## Features
+
+### Layout Cycling
+
+Step forward or backward through a configurable list of layouts. The cycle order is set via `@tiling_revamped_cycle_layouts`.
+
+```
+prefix+o     prefix+o     prefix+o     prefix+o     prefix+o
+dwindle  -->  spiral  -->   grid   --> main-center --> monocle  --+
+   ^                                                              |
+   +--------------------------------------------------------------+
+```
+
+### Pane Marks
+
+Label any pane with a name. Jump to any marked pane with fzf fuzzy selection or by name.
+
+```
+┌───────────────────┬───────────────────┐
+│                   │                   │
+│   mark: build     │   mark: editor    │
+│                   ├─────────┬─────────┤
+│                   │         │  mark:  │
+│                   │         │   log   │
+└───────────────────┴─────────┴─────────┘
+
+  prefix + M  -->  set mark on focused pane
+  prefix + j  -->  fzf picker to jump to any mark
+```
+
+### Named Scratchpads
+
+Toggle floating popup windows backed by persistent tmux sessions. Each scratchpad keeps its state between toggles. Requires tmux 3.2+ for `display-popup`.
+
+```
+┌───────────────────────────────────────┐
+│                                       │
+│   ┌───────────────────────────────┐   │
+│   │                               │   │
+│   │      scratchpad: htop         │   │
+│   │                               │   │
+│   │   (persistent popup session)  │   │
+│   │                               │   │
+│   └───────────────────────────────┘   │
+│                                       │
+│       underlying panes still run      │
+└───────────────────────────────────────┘
+```
+
+### Layout Presets
+
+Save the current layout, orientation, and master ratio as a named preset. Restore it later to switch between workflows instantly.
+
+```
+  save "dev"                              apply "dev"
+
+  ┌───────────┬───────────┐               ┌───────────┬───────────┐
+  │           │     2     │   preset      │           │     2     │
+  │     1     ├─────┬─────┤   -------->   │     1     ├─────┬─────┤
+  │           │  3  │  4  │   dwindle     │           │  3  │  4  │
+  └───────────┴─────┴─────┘   brvc:60     └───────────┴─────┴─────┘
+```
 
 ## Quick Start
 
@@ -257,9 +708,39 @@ The dispatcher at `src/tiling.sh` accepts direct commands for scripting and cust
 
 The core BSP algorithm is ported from sunaku's tmux-layout-dwindle. Three passes run inside a single batched `tmux` invocation:
 
-1. **Flatten**: `select-layout even-vertical` stacks all panes vertically.
-2. **Rearrange**: each pane N moves pane N+1 beside it via `move-pane`, with direction flags determined by the orientation string and pane index parity.
-3. **Size**: binary-halve each branch so sizes cascade from master to leaf.
+**Step 1: Flatten** - stack all panes vertically via `select-layout even-vertical`:
+
+```
+┌───────────────────────────────────────┐
+│                  1                    │
+├───────────────────────────────────────┤
+│                  2                    │
+├───────────────────────────────────────┤
+│                  3                    │
+├───────────────────────────────────────┤
+│                  4                    │
+└───────────────────────────────────────┘
+```
+
+**Step 2: Rearrange** - each pane moves the next pane beside it via `move-pane` with orientation-aware flags:
+
+```
+┌───────────────────┬───────────────────┐
+│                   │         2         │
+│         1         ├─────────┬─────────┤
+│                   │    3    │    4    │
+└───────────────────┴─────────┴─────────┘
+```
+
+**Step 3: Size** - binary-halve each branch so sizes cascade from master to leaf:
+
+```
+┌──────────────────────────┬────────────┐
+│                          │     2      │
+│            1             ├──────┬─────┤
+│                          │  3   │  4  │
+└──────────────────────────┴──────┴─────┘
+```
 
 State is stored in tmux user options:
 

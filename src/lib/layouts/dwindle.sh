@@ -8,19 +8,197 @@ LIB_DIR="${SCRIPT_DIR}/.."
 
 source "${LIB_DIR}/tmux/tmux-config.sh"
 
+# _layout_checksum: compute tmux's layout string checksum (CRC-16).
+_layout_checksum() {
+  local layout="$1"
+  local csum=0
+  local i ord
+  for (( i=0; i<${#layout}; i++ )); do
+    printf -v ord '%d' "'${layout:$i:1}"
+    csum=$(( ((csum >> 1) + ((csum & 1) << 15) + ord) & 0xFFFF ))
+  done
+  printf '%04x' "$csum"
+}
+
+# _bsp_pane_first: determine if the current pane is the first child
+# at a given BSP depth.  Returns "true" or "false".
+#
+# Uses parent-scoped: modulo_hv, is_spiral, corner_tb, corner_lr,
+# spiral_tb, spiral_lr.
+_bsp_pane_first() {
+  local depth=$1
+  local count=$((depth + 1))
+
+  local is_hsplit=false
+  (( count % 2 == modulo_hv )) && is_hsplit=true
+
+  local pf=true
+  if $is_hsplit; then
+    if $is_spiral && (( count % 5 > 2 )); then
+      [[ -n "$spiral_lr" ]] && pf=false || pf=true
+    else
+      [[ -n "$corner_lr" ]] && pf=false || pf=true
+    fi
+  else
+    if $is_spiral && (( count % 5 > 2 )); then
+      [[ -n "$spiral_tb" ]] && pf=false || pf=true
+    else
+      [[ -n "$corner_tb" ]] && pf=false || pf=true
+    fi
+  fi
+  echo "$pf"
+}
+
+# _bsp_leaf_permutation: compute which BSP depth maps to which leaf.
+#
+# tmux select-layout assigns panes to leaves positionally (pane at
+# index K goes to the Kth leaf in the layout string), ignoring pane
+# IDs.  For spirals, reversed splits make some panes the second child,
+# causing the leaf order to diverge from BSP depth order.
+#
+# Returns space-separated BSP depths in leaf-traversal order.
+# Example: "0 1 4 5 3 2" means leaf 0 is BSP depth 0, leaf 2 is
+# BSP depth 4, etc.
+_bsp_leaf_permutation() {
+  local n=$1
+  local start_depth=$2
+
+  if (( n == 1 )); then
+    echo "$start_depth"
+    return
+  fi
+
+  local pf
+  pf=$(_bsp_pane_first "$start_depth")
+
+  local rest_perm
+  rest_perm=$(_bsp_leaf_permutation $((n - 1)) $((start_depth + 1)))
+
+  if [[ "$pf" == "true" ]]; then
+    echo "${start_depth} ${rest_perm}"
+  else
+    echo "${rest_perm} ${start_depth}"
+  fi
+}
+
+# _bsp_build: recursively build a tmux layout string for BSP tiling.
+#
+# Uses parent-scoped: modulo_hv, is_spiral, corner_tb, corner_lr,
+# spiral_tb, spiral_lr.
+_bsp_build() {
+  local pane_ids_str="$1"
+  local x=$2 y=$3 w=$4 h=$5
+  local depth=$6
+
+  local -a pane_ids
+  read -ra pane_ids <<< "$pane_ids_str"
+
+  if (( ${#pane_ids[@]} == 1 )); then
+    echo "${w}x${h},${x},${y},${pane_ids[0]##%}"
+    return
+  fi
+
+  local current="${pane_ids[0]}"
+  local rest="${pane_ids[*]:1}"
+  local count=$((depth + 1))
+
+  local is_hsplit=false
+  (( count % 2 == modulo_hv )) && is_hsplit=true
+
+  local pane_first
+  pane_first=$(_bsp_pane_first "$depth")
+
+  local first_str second_str
+
+  if $is_hsplit; then
+    local lw=$(( (w - 1) / 2 ))
+    local rw=$(( w - lw - 1 ))
+    local lx=$x
+    local rx=$(( x + lw + 1 ))
+
+    if [[ "$pane_first" == "true" ]]; then
+      first_str=$(_bsp_build "${current}" "$lx" "$y" "$lw" "$h" $((depth + 1)))
+      second_str=$(_bsp_build "${rest}" "$rx" "$y" "$rw" "$h" $((depth + 1)))
+    else
+      first_str=$(_bsp_build "${rest}" "$lx" "$y" "$lw" "$h" $((depth + 1)))
+      second_str=$(_bsp_build "${current}" "$rx" "$y" "$rw" "$h" $((depth + 1)))
+    fi
+    echo "${w}x${h},${x},${y}{${first_str},${second_str}}"
+  else
+    local th=$(( (h - 1) / 2 ))
+    local bh=$(( h - th - 1 ))
+    local ty=$y
+    local by=$(( y + th + 1 ))
+
+    if [[ "$pane_first" == "true" ]]; then
+      first_str=$(_bsp_build "${current}" "$x" "$ty" "$w" "$th" $((depth + 1)))
+      second_str=$(_bsp_build "${rest}" "$x" "$by" "$w" "$bh" $((depth + 1)))
+    else
+      first_str=$(_bsp_build "${rest}" "$x" "$ty" "$w" "$th" $((depth + 1)))
+      second_str=$(_bsp_build "${current}" "$x" "$by" "$w" "$bh" $((depth + 1)))
+    fi
+    echo "${w}x${h},${x},${y}[${first_str},${second_str}]"
+  fi
+}
+
+# _bsp_fix_pane_order: swap panes so the Kth pane occupies BSP depth K.
+#
+# After select-layout, tmux assigns pane at index K to leaf K, which
+# may be at BSP depth perm[K] instead of K.  This function swaps panes
+# to correct the assignment.  The geometry is constant (set by the
+# layout string); only pane-to-leaf mapping changes.
+_bsp_fix_pane_order() {
+  local -a panes=("$@")
+  local pane_count="${#panes[@]}"
+
+  local -a perm
+  read -ra perm <<< "$(_bsp_leaf_permutation "$pane_count" 0)"
+
+  # Check if permutation is identity (no swaps needed, e.g. dwindle)
+  local needs_fix=false
+  local i
+  for (( i=0; i<pane_count; i++ )); do
+    if (( perm[i] != i )); then
+      needs_fix=true
+      break
+    fi
+  done
+  $needs_fix || return 0
+
+  # inv[bsp_depth] = leaf_index (constant: geometry doesn't move)
+  local -a inv
+  for (( i=0; i<pane_count; i++ )); do
+    inv[${perm[$i]}]=$i
+  done
+
+  # Bidirectional tracking: which pane is at which leaf and vice versa
+  local -a pane_to_leaf leaf_to_pane
+  for (( i=0; i<pane_count; i++ )); do
+    pane_to_leaf[$i]=$i
+    leaf_to_pane[$i]=$i
+  done
+
+  for (( i=0; i<pane_count; i++ )); do
+    local cur="${pane_to_leaf[$i]}"
+    local tgt="${inv[$i]}"
+    if (( cur != tgt )); then
+      local other="${leaf_to_pane[$tgt]}"
+      tmux swap-pane -d -s "${panes[$i]}" -t "${panes[$other]}" 2>/dev/null
+
+      # Update both mappings
+      pane_to_leaf[$i]=$tgt
+      pane_to_leaf[$other]=$cur
+      leaf_to_pane[$tgt]=$i
+      leaf_to_pane[$cur]=$other
+    fi
+  done
+}
+
 # _apply_bsp_layout: shared BSP implementation for dwindle and spiral.
 #
-# Algorithm (ported from sunaku's tmux-layout-dwindle):
-#   1. Flatten to even-vertical so all panes are stacked vertically.
-#   2. Rearrange via move-pane: each pane N moves pane N+1 beside it, with
-#      direction determined by the orientation flags and parity of count.
-#   3. Resize: binary-halve each branch pane so sizes cascade.
-#   4. Restore pane focus.
-# All tmux commands are batched in a single invocation to avoid flicker.
-#
-# is_spiral_arg: "true" forces spiral trajectory regardless of flags.
-# flags: orientation string [t|b][l|r][h|v][c|s].  Defaults to stored
-#        window option @tiling_revamped_orientation, then to "brvc".
+# Computes BSP geometry mathematically and applies it via tmux's custom
+# layout string, then fixes pane-to-position assignment with swap-pane
+# for spiral layouts where the leaf order diverges from pane index order.
 _apply_bsp_layout() {
   local is_spiral_arg="${1:-false}"
   local flags="${2:-}"
@@ -37,7 +215,7 @@ _apply_bsp_layout() {
   fi
 
   # Parse orientation flags
-  local corner_tb='' spiral_tb='+' corner_lr='' spiral_lr='+' modulo_hv=1 is_vertical=true is_spiral=false
+  local corner_tb='' spiral_tb='+' corner_lr='' spiral_lr='+' modulo_hv=1 is_spiral=false
 
   case "${flags}" in
     *t*) corner_tb='+'; spiral_tb='' ;;
@@ -48,8 +226,8 @@ _apply_bsp_layout() {
     *)   corner_lr='';  spiral_lr='+' ;;
   esac
   case "${flags}" in
-    *h*) modulo_hv=0; is_vertical=false ;;
-    *)   modulo_hv=1; is_vertical=true ;;
+    *h*) modulo_hv=0 ;;
+    *)   modulo_hv=1 ;;
   esac
   case "${flags}" in
     *s*) is_spiral=true ;;
@@ -64,81 +242,24 @@ _apply_bsp_layout() {
   local selected_pane
   selected_pane=$(tmux display-message -p '#{pane_id}' 2>/dev/null || echo "")
 
-  local historic_pane=""
-  historic_pane=$(tmux last-pane 2>/dev/null \
-    && tmux display-message -p '#{pane_id}' 2>/dev/null \
-    && tmux last-pane 2>/dev/null) || true
-
-  local window_height
+  local window_width window_height
+  window_width=$(tmux display-message -p '#{window_width}' 2>/dev/null || echo "80")
   window_height=$(tmux display-message -p '#{window_height}' 2>/dev/null || echo "24")
 
   trap 'set_applying 0' RETURN
   set_applying 1
 
-  # shellcheck disable=SC2046
-  tmux $(
-    {
-      echo "select-layout even-vertical"
+  # Build and apply the layout string
+  local layout_body
+  layout_body=$(_bsp_build "${panes[*]}" 0 0 "$window_width" "$window_height" 0)
 
-      # Rearrangement pass: move each pane beside the previous one
-      local count=1
-      for pane_id in "${panes[@]}"; do
-        if (( count == pane_count )); then
-          break
-        fi
+  local checksum
+  checksum=$(_layout_checksum "$layout_body")
 
-        local move_h='' move_b=''
-        if (( count % 2 == modulo_hv )); then
-          move_h='+'
-          if ${is_spiral} && (( count % 5 > 2 )); then
-            move_b="${spiral_lr}"
-          else
-            move_b="${corner_lr}"
-          fi
-        else
-          move_h=''
-          if ${is_spiral} && (( count % 5 > 2 )); then
-            move_b="${spiral_tb}"
-          else
-            move_b="${corner_tb}"
-          fi
-        fi
+  tmux select-layout "${checksum},${layout_body}" 2>/dev/null
 
-        echo "resize-pane -t ${pane_id} -y ${window_height}"
-        echo "select-pane -t ${pane_id}"
-        local move_cmd="move-pane -d -s .+1 -t ."
-        [[ -n "${move_h}" ]] && move_cmd="${move_cmd} -h"
-        [[ -n "${move_b}" ]] && move_cmd="${move_cmd} -b"
-        echo "${move_cmd}"
-        (( count++ ))
-      done
-
-      # Sizing pass: binary-halve each branch so sizes cascade
-      local branch_height="${window_height}"
-      count=1
-      for pane_id in "${panes[@]}"; do
-        if (( count == pane_count )) && ! ${is_vertical}; then
-          break
-        fi
-        if (( count % 2 == 1 )); then
-          local parent_height="${branch_height}"
-          (( branch_height = branch_height / 2 ))
-          local resize_y
-          if ${is_vertical}; then
-            resize_y="${parent_height}"
-          else
-            resize_y="${branch_height}"
-          fi
-          echo "resize-pane -t ${pane_id} -y ${resize_y}"
-        fi
-        (( count++ ))
-      done
-
-      # Restore focus
-      [[ -n "${historic_pane}" ]] && echo "select-pane -t ${historic_pane}"
-      [[ -n "${selected_pane}" ]] && echo "select-pane -t ${selected_pane}"
-    } | sed 's/$/ ;/'
-  ) 2>/dev/null || true
+  # Restore pane selection
+  [[ -n "${selected_pane}" ]] && tmux select-pane -t "${selected_pane}" 2>/dev/null || true
 }
 
 apply_layout_dwindle() {
@@ -146,7 +267,6 @@ apply_layout_dwindle() {
   _apply_bsp_layout "false" "${flags}"
   set_current_layout "dwindle"
 
-  # Normalize flags: ensure 'c' trajectory (corner, not spiral)
   local stored_flags="${flags:-$(get_window_option "@tiling_revamped_orientation" "brvc")}"
   case "${stored_flags}" in
     *c*) ;;
@@ -156,5 +276,10 @@ apply_layout_dwindle() {
   set_window_option "@tiling_revamped_orientation" "${stored_flags}"
 }
 
+export -f _layout_checksum
+export -f _bsp_pane_first
+export -f _bsp_leaf_permutation
+export -f _bsp_build
+export -f _bsp_fix_pane_order
 export -f _apply_bsp_layout
 export -f apply_layout_dwindle

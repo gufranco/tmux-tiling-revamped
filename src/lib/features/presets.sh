@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+[[ -n "${_TILING_REVAMPED_PRESETS_LOADED:-}" ]] && return 0
+_TILING_REVAMPED_PRESETS_LOADED=1
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/.."
+
+source "${LIB_DIR}/tmux/tmux-config.sh"
+source "${LIB_DIR}/utils/has-command.sh"
+
+# Presets are named layout configurations stored as tmux options.
+# A preset captures: layout name, orientation flags, and master ratio.
+# Format: "layout:flags:master_ratio"
+# Example: @tiling_revamped_preset_dev = "dwindle:brvc:60"
+
+save_preset() {
+  local preset_name="${1:-}"
+
+  if [[ -z "${preset_name}" ]]; then
+    log_error "presets" "save_preset requires a name argument"
+    return 1
+  fi
+
+  preset_name="${preset_name//[^a-zA-Z0-9_-]/}"
+  [[ -z "${preset_name}" ]] && return 1
+
+  local layout flags master_ratio
+  layout=$(get_current_layout)
+  flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
+  master_ratio=$(get_tmux_option "@tiling_revamped_main_center_ratio" "60")
+
+  local preset_value="${layout}:${flags}:${master_ratio}"
+  set_tmux_option "@tiling_revamped_preset_${preset_name}" "${preset_value}"
+}
+
+apply_preset() {
+  local preset_name="${1:-}"
+
+  if [[ -z "${preset_name}" ]]; then
+    if has_command fzf; then
+      # List all @tiling_revamped_preset_* options and pick one
+      preset_name=$(tmux show-options -g 2>/dev/null \
+        | grep '@tiling_revamped_preset_' \
+        | sed 's/@tiling_revamped_preset_//' \
+        | cut -d' ' -f1 \
+        | fzf --prompt="Apply preset: " --height=10) || return 0
+    else
+      log_error "presets" "No preset name given and fzf is not installed"
+      return 1
+    fi
+  fi
+
+  [[ -z "${preset_name}" ]] && return 0
+
+  local preset_value
+  preset_value=$(get_tmux_option "@tiling_revamped_preset_${preset_name}" "")
+
+  if [[ -z "${preset_value}" ]]; then
+    log_error "presets" "Preset not found: ${preset_name}"
+    return 1
+  fi
+
+  local layout flags master_ratio
+  IFS=':' read -r layout flags master_ratio <<< "${preset_value}"
+
+  [[ -n "${master_ratio}" ]] \
+    && set_tmux_option "@tiling_revamped_main_center_ratio" "${master_ratio}"
+
+  [[ -n "${flags}" ]] \
+    && set_window_option "@tiling_revamped_orientation" "${flags}"
+
+  case "${layout}" in
+    dwindle)     _apply_bsp_layout "false" "${flags}" ; set_current_layout "dwindle" ;;
+    spiral)      _apply_bsp_layout "true"  "${flags}" ; set_current_layout "spiral" ;;
+    grid)        apply_layout_grid ;;
+    main-center) apply_layout_main_center ;;
+    monocle)     apply_layout_monocle ;;
+    deck)        apply_layout_deck ;;
+    *)           log_error "presets" "Unknown layout in preset: ${layout}" ; return 1 ;;
+  esac
+}
+
+export -f save_preset
+export -f apply_preset

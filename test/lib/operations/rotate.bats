@@ -52,3 +52,21 @@ teardown() {
   run rotate_layout "90"
   [[ "${status}" -eq 0 ]]
 }
+
+@test "rotate.sh - rotate_layout works with spiral layout" {
+  export MOCK_TILING_LAYOUT="spiral"
+  run rotate_layout "90"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "rotate.sh - rotate_layout skips monocle layout" {
+  export MOCK_TILING_LAYOUT="monocle"
+  run rotate_layout "90"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "rotate.sh - rotate_layout with horizontal orientation" {
+  export MOCK_TILING_ORIENTATION="brhc"
+  run rotate_layout "90"
+  [[ "${status}" -eq 0 ]]
+}

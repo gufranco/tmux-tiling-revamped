@@ -53,3 +53,37 @@ teardown() {
   run jump_to_mark ""
   [[ "${status}" -ne 0 ]]
 }
+
+@test "marks.sh - mark_pane with dashes and underscores" {
+  run mark_pane "my-editor_pane"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "marks.sh - unmark_pane with specific name" {
+  run unmark_pane "editor"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "marks.sh - unmark_pane with no existing marks" {
+  export MOCK_TILING_MARK=""
+  export MOCK_TILING_MARKS=""
+  run unmark_pane
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "marks.sh - jump_to_mark with specific name succeeds" {
+  export MOCK_TILING_MARKS="editor:%2"
+  run jump_to_mark "editor"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "marks.sh - jump_to_mark with nonexistent name fails" {
+  export MOCK_TILING_MARKS="editor:%2"
+  run jump_to_mark "nonexistent"
+  [[ "${status}" -ne 0 ]]
+}
+
+@test "marks.sh - mark_pane only keeps alphanumeric, dashes, and underscores" {
+  run mark_pane '!@#$%'
+  [[ "${status}" -ne 0 ]]
+}

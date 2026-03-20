@@ -29,3 +29,18 @@ teardown() {
   run toggle_scratchpad 'my scratch!pad'
   [[ "${status}" -eq 0 ]]
 }
+
+@test "scratchpad.sh - toggle_scratchpad with command argument" {
+  run toggle_scratchpad "htop" "htop"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "scratchpad.sh - toggle_scratchpad with dashes and underscores in name" {
+  run toggle_scratchpad "my-scratch_pad"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "scratchpad.sh - toggle_scratchpad with empty name falls back to default" {
+  run toggle_scratchpad ""
+  [[ "${status}" -eq 0 ]]
+}

@@ -27,3 +27,21 @@ teardown() {
   run apply_layout_grid
   [[ "${status}" -eq 0 ]]
 }
+
+@test "grid.sh - apply_layout_grid succeeds with 2 panes" {
+  export MOCK_PANE_LIST=$'%0\n%1'
+  run apply_layout_grid
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "grid.sh - apply_layout_grid succeeds with 6 panes" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3\n%4\n%5'
+  run apply_layout_grid
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "grid.sh - apply_layout_grid succeeds with 9 panes" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3\n%4\n%5\n%6\n%7\n%8'
+  run apply_layout_grid
+  [[ "${status}" -eq 0 ]]
+}

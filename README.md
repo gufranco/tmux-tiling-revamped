@@ -16,7 +16,7 @@
 
 ---
 
-**6** layouts  ·  **16** BSP orientations  ·  **8** operations  ·  **13** keybindings  ·  **116** tests  ·  **zero** dependencies
+**6** layouts  ·  **16** BSP orientations  ·  **8** operations  ·  **13** keybindings  ·  **199** tests  ·  **zero** dependencies
 
 <table>
 <tr>

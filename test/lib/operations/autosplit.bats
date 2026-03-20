@@ -35,3 +35,31 @@ teardown() {
   run autosplit_pane
   [[ "${status}" -eq 0 ]]
 }
+
+@test "autosplit.sh - autosplit_pane fails with zero width" {
+  export MOCK_PANE_WIDTH="0"
+  export MOCK_PANE_HEIGHT="50"
+  run autosplit_pane
+  [[ "${status}" -ne 0 ]]
+}
+
+@test "autosplit.sh - autosplit_pane fails with zero height" {
+  export MOCK_PANE_WIDTH="100"
+  export MOCK_PANE_HEIGHT="0"
+  run autosplit_pane
+  [[ "${status}" -ne 0 ]]
+}
+
+@test "autosplit.sh - autosplit_pane at exact boundary (width = 2 * height)" {
+  export MOCK_PANE_WIDTH="100"
+  export MOCK_PANE_HEIGHT="50"
+  run autosplit_pane
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "autosplit.sh - autosplit_pane with width just over 2x height" {
+  export MOCK_PANE_WIDTH="101"
+  export MOCK_PANE_HEIGHT="50"
+  run autosplit_pane
+  [[ "${status}" -eq 0 ]]
+}

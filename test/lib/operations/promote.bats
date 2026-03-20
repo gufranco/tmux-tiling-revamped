@@ -40,3 +40,31 @@ teardown() {
   run promote_pane
   [[ "${status}" -eq 0 ]]
 }
+
+@test "promote.sh - promote_pane works with 2 panes" {
+  export MOCK_PANE_LIST=$'%0\n%1'
+  export MOCK_PANE_ID="%1"
+  run promote_pane
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "promote.sh - promote_pane works with 5 panes" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3\n%4'
+  export MOCK_PANE_ID="%3"
+  run promote_pane
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "promote.sh - promote_pane works with grid layout" {
+  export MOCK_TILING_LAYOUT="grid"
+  export MOCK_PANE_ID="%2"
+  run promote_pane
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "promote.sh - promote_pane works with no layout set" {
+  export MOCK_TILING_LAYOUT=""
+  export MOCK_PANE_ID="%1"
+  run promote_pane
+  [[ "${status}" -eq 0 ]]
+}

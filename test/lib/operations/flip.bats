@@ -47,3 +47,21 @@ teardown() {
   run flip_layout "h"
   [[ "${status}" -eq 0 ]]
 }
+
+@test "flip.sh - flip_layout works with spiral layout" {
+  export MOCK_TILING_LAYOUT="spiral"
+  run flip_layout "h"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "flip.sh - flip_layout vertical with top-left orientation" {
+  export MOCK_TILING_ORIENTATION="tlvc"
+  run flip_layout "v"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "flip.sh - flip_layout horizontal with left orientation" {
+  export MOCK_TILING_ORIENTATION="blvc"
+  run flip_layout "h"
+  [[ "${status}" -eq 0 ]]
+}

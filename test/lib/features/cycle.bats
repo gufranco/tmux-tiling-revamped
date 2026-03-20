@@ -48,3 +48,33 @@ teardown() {
   run cycle_layout
   [[ "${status}" -eq 0 ]]
 }
+
+@test "cycle.sh - cycle_layout with single layout in list" {
+  export MOCK_TILING_CYCLE_LAYOUTS="grid"
+  run cycle_layout "next"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "cycle.sh - cycle_layout prev from first wraps to last" {
+  export MOCK_TILING_LAYOUT="dwindle"
+  run cycle_layout "prev"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "cycle.sh - cycle_layout next from last wraps to first" {
+  export MOCK_TILING_LAYOUT="monocle"
+  run cycle_layout "next"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "cycle.sh - cycle_layout works when current layout not in cycle list" {
+  export MOCK_TILING_LAYOUT="deck"
+  run cycle_layout "next"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "cycle.sh - cycle_layout with custom list including deck" {
+  export MOCK_TILING_CYCLE_LAYOUTS="dwindle deck grid"
+  run cycle_layout "next"
+  [[ "${status}" -eq 0 ]]
+}

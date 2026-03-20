@@ -37,3 +37,26 @@ teardown() {
   run circulate_panes
   [[ "${status}" -eq 0 ]]
 }
+
+@test "circulate.sh - circulate_panes defaults to next" {
+  run circulate_panes
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "circulate.sh - circulate_panes works with 2 panes" {
+  export MOCK_PANE_LIST=$'%0\n%1'
+  run circulate_panes "next"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "circulate.sh - circulate_panes works with 5 panes" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3\n%4'
+  run circulate_panes "next"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "circulate.sh - circulate_panes works with grid layout" {
+  export MOCK_TILING_LAYOUT="grid"
+  run circulate_panes "next"
+  [[ "${status}" -eq 0 ]]
+}

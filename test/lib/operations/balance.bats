@@ -46,3 +46,22 @@ teardown() {
   run balance_panes
   [[ "${status}" -eq 0 ]]
 }
+
+@test "balance.sh - balance_panes succeeds with spiral layout" {
+  export MOCK_TILING_LAYOUT="spiral"
+  run balance_panes
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "balance.sh - balance_panes succeeds with main-center layout" {
+  export MOCK_TILING_LAYOUT="main-center"
+  run balance_panes
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "balance.sh - balance_panes succeeds with single pane" {
+  export MOCK_PANE_LIST="%0"
+  export MOCK_TILING_LAYOUT="dwindle"
+  run balance_panes
+  [[ "${status}" -eq 0 ]]
+}

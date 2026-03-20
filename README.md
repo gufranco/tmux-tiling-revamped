@@ -473,22 +473,35 @@ Split the focused pane along its longest axis. Wide panes split horizontally, ta
 **Wide pane** - splits horizontally:
 
 ```
-┌─────────────────────┐      ┌──────────┬──────────┐
-│                     │      │          │          │
-│     wide pane       │  ->  │   left   │  right   │
-│                     │      │          │          │
-└─────────────────────┘      └──────────┴──────────┘
+┌───────────────────────┐
+│                       │
+│       wide pane       │
+│                       │
+└───────────────────────┘
+
+┌───────────┬───────────┐
+│           │           │
+│   left    │   right   │
+│           │           │
+└───────────┴───────────┘
 ```
 
 **Tall pane** - splits vertically:
 
 ```
-┌──────────┐      ┌──────────┐
-│          │      │   top    │
-│   tall   │  ->  ├──────────┤
-│   pane   │      │  bottom  │
-│          │      │          │
-└──────────┘      └──────────┘
+┌───────────────────────┐
+│                       │
+│       tall pane       │
+│                       │
+│                       │
+└───────────────────────┘
+
+┌───────────────────────┐
+│         top           │
+├───────────────────────┤
+│        bottom         │
+│                       │
+└───────────────────────┘
 ```
 
 ### Focus-Resize
@@ -568,14 +581,26 @@ Toggle floating popup windows backed by persistent tmux sessions. Each scratchpa
 
 Save the current layout, orientation, and master ratio as a named preset. Restore it later to switch between workflows instantly.
 
-```
-  save "dev"                              apply "dev"
+**Save** current state as "dev":
 
-  ┌───────────┬───────────┐               ┌───────────┬───────────┐
-  │           │     2     │   preset      │           │     2     │
-  │     1     ├─────┬─────┤   -------->   │     1     ├─────┬─────┤
-  │           │  3  │  4  │   dwindle     │           │  3  │  4  │
-  └───────────┴─────┴─────┘   brvc:60     └───────────┴─────┴─────┘
+```
+┌───────────┬───────────┐
+│           │     2     │
+│     1     ├─────┬─────┤
+│           │  3  │  4  │
+└───────────┴─────┴─────┘
+  -> dwindle:brvc:60
+```
+
+**Apply** "dev" to restore:
+
+```
+┌───────────┬───────────┐
+│           │     2     │
+│     1     ├─────┬─────┤
+│           │  3  │  4  │
+└───────────┴─────┴─────┘
+  <- dwindle:brvc:60
 ```
 
 ## Quick Start

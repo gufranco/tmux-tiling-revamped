@@ -56,7 +56,10 @@ _apply_bsp_layout() {
     *)   is_spiral=false ;;
   esac
 
-  [[ "${is_spiral_arg}" == "true" ]] && is_spiral=true
+  case "${is_spiral_arg}" in
+    true)  is_spiral=true ;;
+    false) is_spiral=false ;;
+  esac
 
   local selected_pane
   selected_pane=$(tmux display-message -p '#{pane_id}' 2>/dev/null || echo "")
@@ -142,8 +145,15 @@ apply_layout_dwindle() {
   local flags="${1:-}"
   _apply_bsp_layout "false" "${flags}"
   set_current_layout "dwindle"
-  set_window_option "@tiling_revamped_orientation" \
-    "${flags:-$(get_window_option "@tiling_revamped_orientation" "brvc")}"
+
+  # Normalize flags: ensure 'c' trajectory (corner, not spiral)
+  local stored_flags="${flags:-$(get_window_option "@tiling_revamped_orientation" "brvc")}"
+  case "${stored_flags}" in
+    *c*) ;;
+    *s*) stored_flags="${stored_flags//s/c}" ;;
+    *)   stored_flags="${stored_flags}c" ;;
+  esac
+  set_window_option "@tiling_revamped_orientation" "${stored_flags}"
 }
 
 export -f _apply_bsp_layout

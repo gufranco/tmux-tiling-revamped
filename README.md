@@ -2,7 +2,7 @@
 
 <h1>tmux-tiling-revamped</h1>
 
-<strong>BSP tiling window management for tmux. Six layouts, eight operations, zero dependencies.</strong>
+<strong>BSP tiling window management for tmux. Eight layouts, eleven operations, zero dependencies.</strong>
 
 <br>
 <br>
@@ -16,7 +16,7 @@
 
 ---
 
-**6** layouts  ·  **16** BSP orientations  ·  **8** operations  ·  **13** keybindings  ·  **199** tests  ·  **zero** dependencies
+**8** layouts  ·  **16** BSP orientations  ·  **11** operations  ·  **18** keybindings  ·  **368** tests  ·  **zero** dependencies
 
 <table>
 <tr>
@@ -77,9 +77,16 @@ tmux has five built-in layouts. None of them do BSP tiling. The existing plugins
 |:-----------|:---------------:|:-----------:|:--------:|:----:|
 | BSP layouts | Yes | No | No | No |
 | Spiral trajectory | Yes | No | No | No |
+| Main-vertical/horizontal | Yes | Yes | Yes | No |
 | Auto-reapplication | Yes | Yes | No | No |
+| Default layout for new windows | Yes | Yes | No | No |
 | Rotate / flip | Yes | No | No | No |
 | Promote / demote | Yes | No | Yes | No |
+| Master ratio resize | Yes | No | Yes | No |
+| Directional swap | Yes | Yes | No | No |
+| Synchronize panes | Yes | Yes | No | No |
+| Alt keybinding mode | Yes | Yes | No | No |
+| Vim-aware navigation | Yes | Yes | No | No |
 | Named scratchpads | Yes | No | No | No |
 | Pane marks | Yes | No | No | No |
 | Layout presets | Yes | No | No | No |
@@ -91,8 +98,8 @@ tmux has five built-in layouts. None of them do BSP tiling. The existing plugins
 graph LR
     K[Keybinding] --> D[tiling.sh<br>Dispatcher]
     H[tmux Hook] --> D
-    D --> L[Layouts<br>6 modules]
-    D --> O[Operations<br>8 modules]
+    D --> L[Layouts<br>8 modules]
+    D --> O[Operations<br>11 modules]
     D --> F[Features<br>4 modules]
     L --> T[Batched tmux<br>Commands]
     O --> T
@@ -101,7 +108,7 @@ graph LR
     S -.->|auto-reapply| H
 ```
 
-All tmux commands from a single layout application are batched into one `tmux` invocation to prevent flicker. State is stored in tmux user options at window, pane, or global scope. No temp files, no external state.
+State is stored in tmux user options at window, pane, or global scope. No temp files, no external state.
 
 ## Layouts
 
@@ -269,6 +276,64 @@ All panes at full height, side by side at equal widths. Each pane is a "card" in
 │            │             │            │
 │            │             │            │
 └────────────┴─────────────┴────────────┘
+```
+
+### Main-Vertical
+
+One large left pane (master), remaining panes stacked vertically on the right. Wraps tmux's built-in `main-vertical` layout. Master size controlled by `@tiling_revamped_master_ratio`.
+
+**3 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │         2         │
+│                   │                   │
+│         1         ├───────────────────┤
+│                   │         3         │
+│                   │                   │
+└───────────────────┴───────────────────┘
+```
+
+**5 panes**
+
+```
+┌───────────────────┬───────────────────┐
+│                   │         2         │
+│                   ├───────────────────┤
+│         1         │         3         │
+│                   ├───────────────────┤
+│                   │         4         │
+│                   ├───────────────────┤
+│                   │         5         │
+└───────────────────┴───────────────────┘
+```
+
+### Main-Horizontal
+
+One large top pane (master), remaining panes placed side by side below. Wraps tmux's built-in `main-horizontal` layout. Master size controlled by `@tiling_revamped_master_ratio`.
+
+**3 panes**
+
+```
+┌───────────────────────────────────────┐
+│                                       │
+│                  1                    │
+│                                       │
+├───────────────────┬───────────────────┤
+│         2         │         3         │
+└───────────────────┴───────────────────┘
+```
+
+**5 panes**
+
+```
+┌───────────────────────────────────────┐
+│                                       │
+│                  1                    │
+│                                       │
+├─────────┬─────────┬─────────┬─────────┤
+│    2    │    3    │    4    │    5    │
+└─────────┴─────────┴─────────┴─────────┘
 ```
 
 ## BSP Orientation Flags
@@ -528,6 +593,38 @@ When enabled, the focused pane automatically expands toward the golden ratio on 
 └──────┴────────────┴───┘
 ```
 
+### Resize Master
+
+Grow or shrink the master pane by a configurable step (`@tiling_revamped_resize_step`, default 5%). For main-vertical, main-horizontal, and main-center layouts, adjusts the stored ratio and re-applies. For other layouts, resizes the first pane directly.
+
+### Synchronize Panes
+
+Toggle `synchronize-panes` for the current window. When active, all keystrokes are broadcast to every pane simultaneously. Useful for running the same command across multiple servers.
+
+### Directional Swap
+
+Swap the focused pane with its neighbor in a given direction (up, down, left, right). After swapping, the layout is re-applied so sizes recalculate for the new positions.
+
+**Before** - pane C is focused, swap right:
+
+```
+┌───────────┬───────────┐
+│           │     B     │
+│     A     ├─────┬─────┤
+│           │ [C] │  D  │
+└───────────┴─────┴─────┘
+```
+
+**After** - pane C swapped with pane D:
+
+```
+┌───────────┬───────────┐
+│           │     B     │
+│     A     ├─────┬─────┤
+│           │  D  │ [C] │
+└───────────┴─────┴─────┘
+```
+
 ## Features
 
 ### Layout Cycling
@@ -535,10 +632,10 @@ When enabled, the focused pane automatically expands toward the golden ratio on 
 Step forward or backward through a configurable list of layouts. The cycle order is set via `@tiling_revamped_cycle_layouts`.
 
 ```
-prefix+o     prefix+o     prefix+o     prefix+o     prefix+o
-dwindle  -->  spiral  -->   grid   --> main-center --> monocle  --+
-   ^                                                              |
-   +--------------------------------------------------------------+
+       prefix+o    prefix+o    prefix+o       prefix+o          prefix+o
+dwindle --> spiral --> grid --> main-vertical --> main-horizontal --> main-center --+
+   ^                                                                               |
+   +--  monocle  <-----------------------------------------------------------------+
 ```
 
 ### Pane Marks
@@ -636,6 +733,8 @@ All keybindings use the tmux prefix. Every key is configurable via `@tiling_reva
 |:----|:-------|:--------|
 | `d` | Apply dwindle layout | `layout dwindle` |
 | `D` | Apply spiral layout | `layout spiral` |
+| `v` | Apply main-vertical layout | `layout main-vertical` |
+| `V` | Apply main-horizontal layout | `layout main-horizontal` |
 | `b` | Balance panes | `balance` |
 | `B` | Equalize panes | `equalize` |
 | `m` | Promote focused pane to master | `promote` |
@@ -644,6 +743,9 @@ All keybindings use the tmux prefix. Every key is configurable via `@tiling_reva
 | `C-r` | Circulate panes | `circulate` |
 | `C-d` | Smart split along longest axis | `autosplit` |
 | `o` | Cycle to next layout | `cycle` |
+| `+` | Grow master pane | `resize-master grow` |
+| `-` | Shrink master pane | `resize-master shrink` |
+| `S` | Toggle synchronize panes | `sync` |
 | `M` | Mark pane with a name | `mark <name>` |
 | `j` | Jump to marked pane | `jump` |
 | `g` | Toggle scratchpad popup | `scratchpad` |
@@ -657,11 +759,16 @@ All options use the `@tiling_revamped_` prefix.
 | Option | Default | Description |
 |:-------|:--------|:------------|
 | `@tiling_revamped_auto_apply` | `1` | Reapply layout when panes are added or removed |
+| `@tiling_revamped_default_layout` | (empty) | Auto-apply this layout on new windows. Values: `dwindle`, `spiral`, `grid`, `main-vertical`, `main-horizontal`, `main-center`, `deck` |
 | `@tiling_revamped_default_orientation` | `brvc` | Default BSP orientation for new windows |
 | `@tiling_revamped_focus_resize` | `0` | Expand focused pane toward golden ratio on focus |
 | `@tiling_revamped_focus_ratio` | `62` | Percentage of window for focused pane |
+| `@tiling_revamped_master_ratio` | `60` | Master pane percentage for main-vertical and main-horizontal |
 | `@tiling_revamped_main_center_ratio` | `60` | Width percentage for main-center center pane |
-| `@tiling_revamped_cycle_layouts` | `dwindle spiral grid main-center monocle` | Layout cycle order |
+| `@tiling_revamped_resize_step` | `5` | Percentage step for resize-master grow/shrink |
+| `@tiling_revamped_cycle_layouts` | `dwindle spiral grid main-vertical main-horizontal main-center monocle` | Layout cycle order |
+| `@tiling_revamped_alt_keys` | `0` | Use Alt keybindings (`M-<key>`) instead of prefix mode |
+| `@tiling_revamped_navigator` | `off` | Vim-aware navigation. Set to `on` to enable `M-h/j/k/l` with vim detection |
 | `@tiling_revamped_scratch_width` | `80%` | Scratchpad popup width |
 | `@tiling_revamped_scratch_height` | `75%` | Scratchpad popup height |
 | `@tiling_revamped_enable_logging` | `0` | Write debug logs to `~/.tmux/tiling-logs/` |
@@ -669,33 +776,60 @@ All options use the `@tiling_revamped_` prefix.
 ### Custom Keybindings
 
 ```tmux
-set -g @tiling_revamped_key_dwindle    "d"
-set -g @tiling_revamped_key_spiral     "D"
-set -g @tiling_revamped_key_balance    "b"
-set -g @tiling_revamped_key_equalize   "B"
-set -g @tiling_revamped_key_promote    "m"
-set -g @tiling_revamped_key_rotate     "."
-set -g @tiling_revamped_key_flip       ","
-set -g @tiling_revamped_key_circulate  "C-r"
-set -g @tiling_revamped_key_autotile   "C-d"
-set -g @tiling_revamped_key_cycle      "o"
-set -g @tiling_revamped_key_mark       "M"
-set -g @tiling_revamped_key_jump       "j"
-set -g @tiling_revamped_key_scratchpad "g"
+set -g @tiling_revamped_key_dwindle         "d"
+set -g @tiling_revamped_key_spiral          "D"
+set -g @tiling_revamped_key_main_vertical   "v"
+set -g @tiling_revamped_key_main_horizontal "V"
+set -g @tiling_revamped_key_balance         "b"
+set -g @tiling_revamped_key_equalize        "B"
+set -g @tiling_revamped_key_promote         "m"
+set -g @tiling_revamped_key_rotate          "."
+set -g @tiling_revamped_key_flip            ","
+set -g @tiling_revamped_key_circulate       "C-r"
+set -g @tiling_revamped_key_autotile        "C-d"
+set -g @tiling_revamped_key_cycle           "o"
+set -g @tiling_revamped_key_master_grow     "+"
+set -g @tiling_revamped_key_master_shrink   "-"
+set -g @tiling_revamped_key_sync            "S"
+set -g @tiling_revamped_key_mark            "M"
+set -g @tiling_revamped_key_jump            "j"
+set -g @tiling_revamped_key_scratchpad      "g"
+
+# Directional swap (disabled by default, set keys to enable)
+set -g @tiling_revamped_key_swap_up    ""
+set -g @tiling_revamped_key_swap_down  ""
+set -g @tiling_revamped_key_swap_left  ""
+set -g @tiling_revamped_key_swap_right ""
 ```
 
 ### i3-style Alt Keybindings
 
-To use Alt-based bindings without the prefix:
+Enable built-in Alt key mode to bind all actions to `Alt+<key>` without the prefix:
+
+```tmux
+set -g @tiling_revamped_alt_keys 1
+```
+
+This changes all keybindings from `prefix + <key>` to `Alt + <key>` automatically. The key values remain configurable per-action.
+
+Alternatively, define manual Alt bindings for specific actions:
 
 ```tmux
 bind -n M-d run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh layout dwindle"
-bind -n M-D run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh layout spiral"
-bind -n M-g run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh layout grid"
+bind -n M-v run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh layout main-vertical"
 bind -n M-m run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh promote"
 bind -n M-o run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh cycle"
-bind -n M-e run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh autosplit"
 ```
+
+### Vim-Aware Navigation
+
+Enable seamless navigation between tmux panes and vim splits. When the active pane runs vim/nvim/fzf, navigation keys are forwarded to the program instead of moving the tmux selection.
+
+```tmux
+set -g @tiling_revamped_navigator on
+```
+
+This registers `Alt+h/j/k/l` for directional navigation with automatic vim detection via `#{pane_current_command}` inspection.
 
 ## CLI
 
@@ -707,6 +841,8 @@ The dispatcher at `src/tiling.sh` accepts direct commands for scripting and cust
 ./src/tiling.sh layout spiral
 ./src/tiling.sh layout grid
 ./src/tiling.sh layout main-center
+./src/tiling.sh layout main-vertical
+./src/tiling.sh layout main-horizontal
 ./src/tiling.sh layout monocle
 ./src/tiling.sh layout deck
 
@@ -719,6 +855,11 @@ The dispatcher at `src/tiling.sh` accepts direct commands for scripting and cust
 ./src/tiling.sh circulate prev
 ./src/tiling.sh autosplit
 ./src/tiling.sh focus-resize
+./src/tiling.sh resize-master grow
+./src/tiling.sh resize-master shrink
+./src/tiling.sh sync
+./src/tiling.sh swap R
+./src/tiling.sh swap U
 
 # Features
 ./src/tiling.sh cycle next
@@ -731,41 +872,17 @@ The dispatcher at `src/tiling.sh` accepts direct commands for scripting and cust
 
 ## How It Works
 
-The core BSP algorithm is ported from sunaku's tmux-layout-dwindle. Three passes run inside a single batched `tmux` invocation:
+The core BSP algorithm computes a tmux custom layout string mathematically, then applies it in a single `select-layout` call.
 
-**Step 1: Flatten** - stack all panes vertically via `select-layout even-vertical`:
-
-```
-┌───────────────────────────────────────┐
-│                  1                    │
-├───────────────────────────────────────┤
-│                  2                    │
-├───────────────────────────────────────┤
-│                  3                    │
-├───────────────────────────────────────┤
-│                  4                    │
-└───────────────────────────────────────┘
-```
-
-**Step 2: Rearrange** - each pane moves the next pane beside it via `move-pane` with orientation-aware flags:
+**Step 1: Build** - `_bsp_build()` recursively divides the window into a binary tree. At each depth, the orientation flags determine whether the split is horizontal or vertical and which child gets the current pane. The output is a tmux layout string encoding every leaf's position, size, and pane ID:
 
 ```
-┌───────────────────┬───────────────────┐
-│                   │         2         │
-│         1         ├─────────┬─────────┤
-│                   │    3    │    4    │
-└───────────────────┴─────────┴─────────┘
+200x50,0,0{100x50,0,0,0,100x50,101,0[100x24,101,0,1,100x25,101,25{50x25,101,25,2,49x25,152,25,3}]}
 ```
 
-**Step 3: Size** - binary-halve each branch so sizes cascade from master to leaf:
+**Step 2: Checksum** - `_layout_checksum()` computes the CRC-16 checksum that tmux requires as a prefix to custom layout strings.
 
-```
-┌──────────────────────────┬────────────┐
-│                          │     2      │
-│            1             ├──────┬─────┤
-│                          │  3   │  4  │
-└──────────────────────────┴──────┴─────┘
-```
+**Step 3: Apply** - `select-layout <checksum>,<layout_body>` positions all panes in one call. For spiral layouts, `_bsp_fix_pane_order()` then swaps panes so each pane occupies the correct BSP depth position.
 
 State is stored in tmux user options:
 
@@ -792,6 +909,8 @@ src/
       spiral.sh               # BSP spiral (delegates to dwindle)
       grid.sh                 # Even grid via tmux tiled
       main-center.sh          # Wide center pane with side columns
+      main-vertical.sh        # Master left, stack right
+      main-horizontal.sh      # Master top, stack bottom
       monocle.sh              # Zoom toggle
       deck.sh                 # Full-height equal-width stack
     operations/
@@ -803,6 +922,9 @@ src/
       circulate.sh            # Shift pane positions
       autosplit.sh            # Smart split along longest axis
       focus-resize.sh         # Golden ratio resize on focus
+      resize-master.sh        # Grow or shrink master pane
+      sync.sh                 # Toggle synchronize-panes
+      swap-direction.sh       # Swap pane with directional neighbor
     features/
       marks.sh                # Named pane labels with fzf jump
       scratchpad.sh           # Persistent popup sessions
@@ -818,7 +940,7 @@ src/
 test/
   helpers.bash                # Mock tmux for unit tests
   tmux_helpers.bash           # Real tmux server for integration tests
-  lib/                        # 15 bats test files mirroring src/lib/
+  lib/                        # 28 bats test files mirroring src/lib/
 examples/
   minimal.tmux.conf           # Drop-in config with defaults
   power-user.tmux.conf        # Full config with all options
@@ -830,7 +952,7 @@ examples/
 
 | Command | Description |
 |:--------|:------------|
-| `make test` | Run the full 116-test bats suite |
+| `make test` | Run the full 366-test bats suite |
 | `make test-unit` | Run unit tests only |
 | `make lint` | ShellCheck all shell files |
 | `make clean` | Remove temp test artifacts |

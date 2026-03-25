@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-25
+
+### Added
+
+- Layouts: main-vertical (master left, stack right) and main-horizontal (master top, stack bottom)
+- Operations: resize-master (grow/shrink master pane by configurable step), sync (toggle synchronize-panes), swap-direction (swap pane with directional neighbor)
+- Default layout for new windows via `@tiling_revamped_default_layout` option and `after-new-window` hook
+- Alt keybinding mode via `@tiling_revamped_alt_keys` (binds all actions to `Alt+<key>` without prefix)
+- Vim-aware pane navigation via `@tiling_revamped_navigator` (M-h/j/k/l with vim/nvim/fzf detection)
+- Integration test suite (60 tests against a real tmux server)
+- New keybindings: `v` (main-vertical), `V` (main-horizontal), `+` (grow master), `-` (shrink master), `S` (sync)
+- New options: `@tiling_revamped_master_ratio`, `@tiling_revamped_resize_step`
+
+### Fixed
+
+- Spiral pane ordering: `_bsp_fix_pane_order()` is now called after `select-layout` so panes occupy correct BSP depth positions
+- Balance operation re-applies the correct layout instead of destroying BSP topology with `even-vertical`
+- Main-center layout re-resizes center pane after `move-pane` resets widths
+- Scratchpad session name and command are now properly quoted
+- Promote and circulate now use recursion guards when re-applying grid/deck layouts
+- Grid and deck layouts use `trap RETURN` for the recursion guard, preventing leaked state on early exit
+- Unmark by name now clears the pane option on the target pane
+
+### Changed
+
+- Default cycle order includes main-vertical and main-horizontal
+- README "How It Works" rewritten to describe the actual BSP algorithm (layout string computation, not flatten-rearrange-size)
+
 ## [1.0.0] - 2026-03-20
 
 ### Added

@@ -54,7 +54,7 @@ get_pane_height() {
   create_panes 4
   run_tiling layout dwindle
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   # BSP first split divides in half; rounding may shift 1px, so check >= 40%
   local master_w window_w threshold
   master_w=$(get_pane_width "${panes[0]}")
@@ -74,7 +74,7 @@ get_pane_height() {
   create_panes 5
   run_tiling layout spiral
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   local master_w window_w threshold
   master_w=$(get_pane_width "${panes[0]}")
   window_w=$(command tmux -S "${TMUX_SOCKET}" display-message -p '#{window_width}' 2>/dev/null)
@@ -102,7 +102,7 @@ get_pane_height() {
   # After main-center, pane order is: left-side, center, right-side
   # Center pane (index 1) must be the widest
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   assert_pane_wider_than "${panes[1]}" "${panes[0]}"
   assert_pane_wider_than "${panes[1]}" "${panes[2]}"
 }
@@ -118,7 +118,7 @@ get_pane_height() {
   create_panes 3
   run_tiling layout main-vertical
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   assert_pane_wider_than "${panes[0]}" "${panes[1]}"
 }
 
@@ -133,7 +133,7 @@ get_pane_height() {
   create_panes 3
   run_tiling layout main-horizontal
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   assert_pane_taller_than "${panes[0]}" "${panes[1]}"
 }
 
@@ -285,7 +285,7 @@ get_pane_height() {
   create_panes 3
   run_tiling layout main-vertical
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   local before_width
   before_width=$(get_pane_width "${panes[0]}")
   run_tiling resize-master grow
@@ -298,7 +298,7 @@ get_pane_height() {
   create_panes 3
   run_tiling layout main-vertical
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   local before_width
   before_width=$(get_pane_width "${panes[0]}")
   run_tiling resize-master shrink
@@ -311,7 +311,7 @@ get_pane_height() {
   create_panes 3
   run_tiling layout main-horizontal
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   local before_height
   before_height=$(get_pane_height "${panes[0]}")
   run_tiling resize-master grow
@@ -345,7 +345,7 @@ get_pane_height() {
   create_panes 3
   run_tiling layout dwindle
   local -a panes_before
-  mapfile -t panes_before < <(get_pane_ids)
+  while IFS= read -r _p; do panes_before+=("$_p"); done < <(get_pane_ids)
   # Focus the master pane (leftmost)
   command tmux -S "${TMUX_SOCKET}" select-pane -t "${panes_before[0]}" 2>/dev/null
   sleep 0.1
@@ -404,7 +404,7 @@ get_pane_height() {
 @test "integration: jump to mark selects the correct pane" {
   create_panes 3
   local -a panes
-  mapfile -t panes < <(get_pane_ids)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(get_pane_ids)
   # Mark the second pane
   command tmux -S "${TMUX_SOCKET}" select-pane -t "${panes[1]}" 2>/dev/null
   sleep 0.1

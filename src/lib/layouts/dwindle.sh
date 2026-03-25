@@ -204,7 +204,7 @@ _apply_bsp_layout() {
   local flags="${2:-}"
 
   local -a panes
-  mapfile -t panes < <(tmux list-panes -F '#{pane_id}' 2>/dev/null)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(tmux list-panes -F '#{pane_id}' 2>/dev/null)
   local pane_count="${#panes[@]}"
 
   (( pane_count <= 1 )) && return 0

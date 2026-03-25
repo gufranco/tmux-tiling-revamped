@@ -16,7 +16,7 @@ source "${LIB_DIR}/tmux/tmux-config.sh"
 # 4+ panes: [ left ][ main ][ right ] where right pane stacks extras
 apply_layout_main_center() {
   local -a panes
-  mapfile -t panes < <(tmux list-panes -F '#{pane_id}' 2>/dev/null)
+  while IFS= read -r _p; do panes+=("$_p"); done < <(tmux list-panes -F '#{pane_id}' 2>/dev/null)
   local pane_count="${#panes[@]}"
 
   (( pane_count <= 1 )) && { set_current_layout "main-center"; return 0; }

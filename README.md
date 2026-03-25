@@ -768,7 +768,7 @@ All options use the `@tiling_revamped_` prefix.
 | `@tiling_revamped_resize_step` | `5` | Percentage step for resize-master grow/shrink |
 | `@tiling_revamped_cycle_layouts` | `dwindle spiral grid main-vertical main-horizontal main-center monocle` | Layout cycle order |
 | `@tiling_revamped_alt_keys` | `0` | Use Alt keybindings (`M-<key>`) instead of prefix mode |
-| `@tiling_revamped_navigator` | `off` | Vim-aware navigation. Set to `on` to enable `M-h/j/k/l` with vim detection |
+| `@tiling_revamped_navigator` | `0` | Vim-aware navigation. Set to `1` to enable `M-h/j/k/l` with vim detection |
 | `@tiling_revamped_scratch_width` | `80%` | Scratchpad popup width |
 | `@tiling_revamped_scratch_height` | `75%` | Scratchpad popup height |
 | `@tiling_revamped_enable_logging` | `0` | Write debug logs to `~/.tmux/tiling-logs/` |
@@ -826,7 +826,7 @@ bind -n M-o run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh cycle"
 Enable seamless navigation between tmux panes and vim splits. When the active pane runs vim/nvim/fzf, navigation keys are forwarded to the program instead of moving the tmux selection.
 
 ```tmux
-set -g @tiling_revamped_navigator on
+set -g @tiling_revamped_navigator 1
 ```
 
 This registers `Alt+h/j/k/l` for directional navigation with automatic vim detection via `#{pane_current_command}` inspection.

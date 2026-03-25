@@ -116,9 +116,9 @@ _setup_hooks() {
 
 _setup_navigation() {
   local navigator
-  navigator=$(_get_option "@tiling_revamped_navigator" "off")
+  navigator=$(_get_option "@tiling_revamped_navigator" "0")
 
-  [[ "${navigator}" == "off" ]] && return 0
+  [[ "${navigator}" != "1" ]] && return 0
 
   local is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
 

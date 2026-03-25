@@ -821,6 +821,89 @@ bind -n M-m run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh promot
 bind -n M-o run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh cycle"
 ```
 
+### macOS: Configuring the Option Key as Meta
+
+On macOS, the Option (Alt) key does not send Meta/ESC sequences by default. Instead, it inserts special Unicode characters. For example, Option+g produces `©` instead of the `ESC g` sequence that tmux expects for `M-g` bindings.
+
+This affects all `Alt+<key>` bindings in tmux, including alt key mode and vim-aware navigation. Without the fix below, none of the `M-` keybindings will work on macOS.
+
+#### Why This Happens
+
+Terminal emulators on macOS follow Apple's input method convention: the Option key is a modifier for accented characters and symbols. When you press Option+e followed by a vowel, you get an accented letter. This is useful for typing in languages like French, Spanish, and Portuguese, but it means the Option key never reaches tmux as a Meta modifier.
+
+tmux `M-g` means "Meta+g", which the terminal must send as the two-byte sequence `ESC g` (0x1B followed by 0x67). When the terminal sends `©` (0xC2 0xA9) instead, tmux sees an unknown character and ignores it.
+
+#### Fixing iTerm2
+
+1. Open **iTerm2 > Settings** (Cmd+,)
+2. Go to **Profiles > Keys > General**
+3. Find **Left Option key** and change it from "Normal" to **"Esc+"**
+4. Repeat for **Right Option key** if you want both sides to work as Meta
+5. Close Settings
+
+#### Fixing Terminal.app
+
+1. Open **Terminal > Settings** (Cmd+,)
+2. Go to **Profiles** and select your active profile
+3. Go to the **Keyboard** tab
+4. Check **"Use Option as Meta key"**
+5. Close Settings
+
+#### Fixing Kitty
+
+Kitty on macOS sends Option key as Meta by default. No configuration change is needed. If it was changed, verify `~/.config/kitty/kitty.conf` contains:
+
+```
+macos_option_as_alt yes
+```
+
+#### Fixing Ghostty
+
+Add to `~/.config/ghostty/config`:
+
+```
+macos-option-as-alt = true
+```
+
+#### Fixing Alacritty
+
+Alacritty on macOS does not require configuration. Option keys are sent as Alt/Meta by default.
+
+#### Fixing WezTerm
+
+Add to `~/.config/wezterm/wezterm.lua`:
+
+```lua
+config.send_composed_key_when_left_alt_is_pressed = false
+config.send_composed_key_when_right_alt_is_pressed = false
+```
+
+#### After Changing the Setting
+
+The terminal emulator change does not propagate to already-running tmux sessions. tmux caches terminal capabilities when a client first connects. To pick up the new setting:
+
+1. Detach from tmux: `Prefix + d` or run `tmux detach`
+2. Close the terminal tab or window
+3. Open a new terminal window
+4. Reattach: `tmux attach`
+
+Alternatively, kill the tmux server entirely and start fresh:
+
+```bash
+tmux kill-server
+tmux new-session
+```
+
+#### Trade-off
+
+Switching Option to Esc+ means you lose the ability to type special characters via Option+key in the terminal. Accented letters, currency symbols, and typographic characters that macOS normally produces through Option combinations will no longer be available through the Option modifier inside terminal applications.
+
+For most development workflows this is acceptable. If you need occasional special character input, you can:
+
+- Use the macOS Character Viewer (Ctrl+Cmd+Space) to insert special characters
+- Configure only the **left** Option key as Esc+ and keep the **right** Option key as "Normal" for special characters
+- Switch the setting back temporarily when needed
+
 ### Vim-Aware Navigation
 
 Enable seamless navigation between tmux panes and vim splits. When the active pane runs vim/nvim/fzf, navigation keys are forwarded to the program instead of moving the tmux selection.

@@ -13,7 +13,7 @@ teardown() {
 
 @test "constants.sh - TILING_REVAMPED_VERSION is set" {
   [[ -n "${TILING_REVAMPED_VERSION}" ]]
-  [[ "${TILING_REVAMPED_VERSION}" == "1.0.0" ]]
+  [[ "${TILING_REVAMPED_VERSION}" == "1.1.0" ]]
 }
 
 @test "constants.sh - TILING_DEFAULT_ORIENTATION is set" {
@@ -51,6 +51,24 @@ teardown() {
   [[ "${OPT_AUTO_APPLY}" == "@tiling_revamped_auto_apply" ]]
 }
 
+@test "constants.sh - TILING_DEFAULT_RESIZE_STEP is set" {
+  [[ -n "${TILING_DEFAULT_RESIZE_STEP}" ]]
+  [[ "${TILING_DEFAULT_RESIZE_STEP}" == "5" ]]
+}
+
+@test "constants.sh - new option constants are set" {
+  [[ -n "${OPT_DEFAULT_LAYOUT}" ]]
+  [[ "${OPT_DEFAULT_LAYOUT}" == "@tiling_revamped_default_layout" ]]
+  [[ -n "${OPT_MASTER_RATIO}" ]]
+  [[ "${OPT_MASTER_RATIO}" == "@tiling_revamped_master_ratio" ]]
+  [[ -n "${OPT_RESIZE_STEP}" ]]
+  [[ "${OPT_RESIZE_STEP}" == "@tiling_revamped_resize_step" ]]
+  [[ -n "${OPT_ALT_KEYS}" ]]
+  [[ "${OPT_ALT_KEYS}" == "@tiling_revamped_alt_keys" ]]
+  [[ -n "${OPT_NAVIGATOR}" ]]
+  [[ "${OPT_NAVIGATOR}" == "@tiling_revamped_navigator" ]]
+}
+
 @test "constants.sh - all keybinding option constants are set" {
   [[ -n "${OPT_KEY_DWINDLE}" ]]
   [[ -n "${OPT_KEY_SPIRAL}" ]]
@@ -65,6 +83,15 @@ teardown() {
   [[ -n "${OPT_KEY_MARK}" ]]
   [[ -n "${OPT_KEY_JUMP}" ]]
   [[ -n "${OPT_KEY_SCRATCHPAD}" ]]
+  [[ -n "${OPT_KEY_MAIN_VERTICAL}" ]]
+  [[ -n "${OPT_KEY_MAIN_HORIZONTAL}" ]]
+  [[ -n "${OPT_KEY_MASTER_GROW}" ]]
+  [[ -n "${OPT_KEY_MASTER_SHRINK}" ]]
+  [[ -n "${OPT_KEY_SYNC}" ]]
+  [[ -n "${OPT_KEY_SWAP_UP}" ]]
+  [[ -n "${OPT_KEY_SWAP_DOWN}" ]]
+  [[ -n "${OPT_KEY_SWAP_LEFT}" ]]
+  [[ -n "${OPT_KEY_SWAP_RIGHT}" ]]
 }
 
 @test "constants.sh - source guard prevents double loading" {

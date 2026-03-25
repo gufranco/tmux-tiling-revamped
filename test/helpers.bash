@@ -28,8 +28,13 @@ setup_test_environment() {
   unset _TILING_REVAMPED_SPIRAL_LOADED
   unset _TILING_REVAMPED_GRID_LOADED
   unset _TILING_REVAMPED_MAIN_CENTER_LOADED
+  unset _TILING_REVAMPED_MAIN_VERTICAL_LOADED
+  unset _TILING_REVAMPED_MAIN_HORIZONTAL_LOADED
   unset _TILING_REVAMPED_MONOCLE_LOADED
   unset _TILING_REVAMPED_DECK_LOADED
+  unset _TILING_REVAMPED_RESIZE_MASTER_LOADED
+  unset _TILING_REVAMPED_SYNC_LOADED
+  unset _TILING_REVAMPED_SWAP_DIRECTION_LOADED
 }
 
 cleanup_test_environment() {
@@ -79,13 +84,19 @@ tmux() {
         @tiling_revamped_enable_logging)
           echo "${MOCK_TILING_ENABLE_LOGGING:-0}" ;;
         @tiling_revamped_cycle_layouts)
-          echo "${MOCK_TILING_CYCLE_LAYOUTS:-dwindle spiral grid main-center monocle}" ;;
+          echo "${MOCK_TILING_CYCLE_LAYOUTS:-dwindle spiral grid main-vertical main-horizontal main-center monocle}" ;;
         @tiling_revamped_scratch_width)
           echo "${MOCK_TILING_SCRATCH_WIDTH:-80%}" ;;
         @tiling_revamped_scratch_height)
           echo "${MOCK_TILING_SCRATCH_HEIGHT:-75%}" ;;
         @tiling_revamped_monocle_prev_layout)
           echo "${MOCK_TILING_MONOCLE_PREV:-dwindle}" ;;
+        @tiling_revamped_master_ratio)
+          echo "${MOCK_TILING_MASTER_RATIO:-60}" ;;
+        @tiling_revamped_resize_step)
+          echo "${MOCK_TILING_RESIZE_STEP:-5}" ;;
+        @tiling_revamped_default_layout)
+          echo "${MOCK_TILING_DEFAULT_LAYOUT:-}" ;;
         *)
           echo "${MOCK_TMUX_OPTION_VALUE:-}" ;;
       esac
@@ -95,6 +106,9 @@ tmux() {
       return 0
       ;;
     set-hook)
+      return 0
+      ;;
+    set-window-option)
       return 0
       ;;
     display-message)

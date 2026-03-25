@@ -42,8 +42,19 @@ promote_pane() {
     case "${current_layout}" in
       dwindle) _apply_bsp_layout "false" "${flags}" ;;
       spiral)  _apply_bsp_layout "true"  "${flags}" ;;
-      grid)    tmux select-layout tiled 2>/dev/null || true ;;
-      deck)    tmux select-layout even-horizontal 2>/dev/null || true ;;
+      grid)
+        set_applying 1
+        tmux select-layout tiled 2>/dev/null || true
+        set_applying 0
+        ;;
+      deck)
+        set_applying 1
+        tmux select-layout even-horizontal 2>/dev/null || true
+        set_applying 0
+        ;;
+      main-vertical)   apply_layout_main_vertical ;;
+      main-horizontal) apply_layout_main_horizontal ;;
+      main-center)     apply_layout_main_center ;;
       *)       ;;
     esac
   fi

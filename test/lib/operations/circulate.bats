@@ -60,3 +60,16 @@ teardown() {
   run circulate_panes "next"
   [[ "${status}" -eq 0 ]]
 }
+
+@test "circulate.sh - circulate_panes works with deck layout" {
+  export MOCK_TILING_LAYOUT="deck"
+  run circulate_panes "next"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "circulate.sh - circulate_panes works with spiral layout" {
+  export MOCK_TILING_LAYOUT="spiral"
+  export MOCK_TILING_ORIENTATION="brvs"
+  run circulate_panes "prev"
+  [[ "${status}" -eq 0 ]]
+}

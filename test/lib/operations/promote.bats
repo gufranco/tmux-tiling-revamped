@@ -68,3 +68,18 @@ teardown() {
   run promote_pane
   [[ "${status}" -eq 0 ]]
 }
+
+@test "promote.sh - promote_pane works with deck layout" {
+  export MOCK_TILING_LAYOUT="deck"
+  export MOCK_PANE_ID="%2"
+  run promote_pane
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "promote.sh - promote_pane works with spiral layout" {
+  export MOCK_TILING_LAYOUT="spiral"
+  export MOCK_TILING_ORIENTATION="brvs"
+  export MOCK_PANE_ID="%2"
+  run promote_pane
+  [[ "${status}" -eq 0 ]]
+}

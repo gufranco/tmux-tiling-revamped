@@ -18,7 +18,7 @@ cycle_layout() {
 
   local layouts_str
   layouts_str=$(get_tmux_option "@tiling_revamped_cycle_layouts" \
-    "dwindle spiral grid main-center monocle")
+    "dwindle spiral grid main-vertical main-horizontal main-center monocle")
 
   local -a layouts
   read -ra layouts <<< "${layouts_str}"
@@ -50,13 +50,15 @@ cycle_layout() {
   flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
 
   case "${next_layout}" in
-    dwindle)     _apply_bsp_layout "false" "${flags}" ; set_current_layout "dwindle" ;;
-    spiral)      _apply_bsp_layout "true"  "${flags}" ; set_current_layout "spiral" ;;
-    grid)        apply_layout_grid ;;
-    main-center) apply_layout_main_center ;;
-    monocle)     apply_layout_monocle ;;
-    deck)        apply_layout_deck ;;
-    *)           log_error "cycle" "Unknown layout: ${next_layout}" ;;
+    dwindle)         _apply_bsp_layout "false" "${flags}" ; set_current_layout "dwindle" ;;
+    spiral)          _apply_bsp_layout "true"  "${flags}" ; set_current_layout "spiral" ;;
+    grid)            apply_layout_grid ;;
+    main-center)     apply_layout_main_center ;;
+    main-vertical)   apply_layout_main_vertical ;;
+    main-horizontal) apply_layout_main_horizontal ;;
+    monocle)         apply_layout_monocle ;;
+    deck)            apply_layout_deck ;;
+    *)               log_error "cycle" "Unknown layout: ${next_layout}" ;;
   esac
 }
 

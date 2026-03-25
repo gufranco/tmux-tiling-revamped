@@ -27,9 +27,26 @@ balance_panes() {
     monocle)
       # Nothing to balance in monocle
       ;;
+    dwindle)
+      local flags
+      flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
+      _apply_bsp_layout "false" "${flags}"
+      ;;
+    spiral)
+      local flags
+      flags=$(get_window_option "@tiling_revamped_orientation" "brvs")
+      _apply_bsp_layout "true" "${flags}"
+      ;;
+    main-center)
+      apply_layout_main_center
+      ;;
+    main-vertical)
+      apply_layout_main_vertical
+      ;;
+    main-horizontal)
+      apply_layout_main_horizontal
+      ;;
     *)
-      # For dwindle/spiral/main-center: use even-vertical as a balanced base,
-      # then re-apply the stored layout so topology is restored at equal ratios
       tmux select-layout even-vertical 2>/dev/null || true
       ;;
   esac

@@ -5,7 +5,13 @@ load "${BATS_TEST_DIRNAME}/../../helpers.bash"
 setup() {
   setup_test_environment
   export MOCK_PANE_LIST=$'%0\n%1\n%2'
+  export MOCK_PANE_ID="%0"
+  export MOCK_WINDOW_WIDTH="200"
+  export MOCK_WINDOW_HEIGHT="50"
   export MOCK_TILING_APPLYING="0"
+  export MOCK_TILING_ORIENTATION="brvc"
+  source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/dwindle.sh"
+  source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/main-center.sh"
   source "${BATS_TEST_DIRNAME}/../../../src/lib/operations/balance.sh"
 }
 
@@ -62,6 +68,35 @@ teardown() {
 @test "balance.sh - balance_panes succeeds with single pane" {
   export MOCK_PANE_LIST="%0"
   export MOCK_TILING_LAYOUT="dwindle"
+  run balance_panes
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "balance.sh - balance_panes with dwindle re-applies BSP layout" {
+  export MOCK_TILING_LAYOUT="dwindle"
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3'
+  run balance_panes
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "balance.sh - balance_panes with spiral re-applies BSP layout" {
+  export MOCK_TILING_LAYOUT="spiral"
+  export MOCK_TILING_ORIENTATION="brvs"
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3'
+  run balance_panes
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "balance.sh - balance_panes with main-center re-applies layout" {
+  export MOCK_TILING_LAYOUT="main-center"
+  export MOCK_PANE_LIST=$'%0\n%1\n%2'
+  run balance_panes
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "balance.sh - balance_panes with 5 panes dwindle layout" {
+  export MOCK_TILING_LAYOUT="dwindle"
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3\n%4'
   run balance_panes
   [[ "${status}" -eq 0 ]]
 }

@@ -10,6 +10,8 @@
 #   tiling.sh layout spiral  [flags]
 #   tiling.sh layout grid
 #   tiling.sh layout main-center
+#   tiling.sh layout main-vertical
+#   tiling.sh layout main-horizontal
 #   tiling.sh layout monocle
 #   tiling.sh layout deck
 #   tiling.sh balance
@@ -20,6 +22,9 @@
 #   tiling.sh circulate [next|prev]
 #   tiling.sh autosplit
 #   tiling.sh focus-resize
+#   tiling.sh resize-master [grow|shrink]
+#   tiling.sh sync
+#   tiling.sh swap    [U|D|L|R]
 #   tiling.sh cycle   [next|prev]
 #   tiling.sh mark    <name>
 #   tiling.sh unmark  [name]
@@ -27,7 +32,7 @@
 #   tiling.sh scratchpad [name] [cmd]
 #   tiling.sh preset  save <name>
 #   tiling.sh preset  apply [name]
-#   tiling.sh hook    split|kill|exit|resize|focus
+#   tiling.sh hook    split|kill|exit|resize|focus|new-window
 
 PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -40,6 +45,8 @@ source "${PLUGIN_DIR}/src/lib/layouts/dwindle.sh"
 source "${PLUGIN_DIR}/src/lib/layouts/spiral.sh"
 source "${PLUGIN_DIR}/src/lib/layouts/grid.sh"
 source "${PLUGIN_DIR}/src/lib/layouts/main-center.sh"
+source "${PLUGIN_DIR}/src/lib/layouts/main-vertical.sh"
+source "${PLUGIN_DIR}/src/lib/layouts/main-horizontal.sh"
 source "${PLUGIN_DIR}/src/lib/layouts/monocle.sh"
 source "${PLUGIN_DIR}/src/lib/layouts/deck.sh"
 source "${PLUGIN_DIR}/src/lib/operations/balance.sh"
@@ -50,12 +57,40 @@ source "${PLUGIN_DIR}/src/lib/operations/promote.sh"
 source "${PLUGIN_DIR}/src/lib/operations/circulate.sh"
 source "${PLUGIN_DIR}/src/lib/operations/autosplit.sh"
 source "${PLUGIN_DIR}/src/lib/operations/focus-resize.sh"
+source "${PLUGIN_DIR}/src/lib/operations/resize-master.sh"
+source "${PLUGIN_DIR}/src/lib/operations/sync.sh"
+source "${PLUGIN_DIR}/src/lib/operations/swap-direction.sh"
 source "${PLUGIN_DIR}/src/lib/features/marks.sh"
 source "${PLUGIN_DIR}/src/lib/features/scratchpad.sh"
 source "${PLUGIN_DIR}/src/lib/features/presets.sh"
 source "${PLUGIN_DIR}/src/lib/features/cycle.sh"
 
 _handle_hook() {
+  local event="${1:-}"
+
+  # Handle new-window: apply default layout if configured
+  if [[ "${event}" == "new-window" ]]; then
+    local default_layout
+    default_layout=$(get_tmux_option "@tiling_revamped_default_layout" "")
+    [[ -z "${default_layout}" ]] && return 0
+
+    local flags
+    flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
+
+    case "${default_layout}" in
+      dwindle)         _apply_bsp_layout "false" "${flags}"; set_current_layout "dwindle" ;;
+      spiral)          _apply_bsp_layout "true"  "${flags}"; set_current_layout "spiral" ;;
+      grid)            apply_layout_grid ;;
+      main-center)     apply_layout_main_center ;;
+      main-vertical)   apply_layout_main_vertical ;;
+      main-horizontal) apply_layout_main_horizontal ;;
+      monocle)         apply_layout_monocle ;;
+      deck)            apply_layout_deck ;;
+      *)               log_error "hook" "Unknown default layout: ${default_layout}" ;;
+    esac
+    return 0
+  fi
+
   # Recursion guard: skip if a layout is currently being applied
   is_applying && return 0
 
@@ -72,13 +107,15 @@ _handle_hook() {
   flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
 
   case "${current_layout}" in
-    dwindle)     _apply_bsp_layout "false" "${flags}" ;;
-    spiral)      _apply_bsp_layout "true"  "${flags}" ;;
-    grid)        apply_layout_grid ;;
-    main-center) apply_layout_main_center ;;
-    deck)        apply_layout_deck ;;
-    monocle)     ;;
-    *)           log_error "hook" "Unknown layout for reapplication: ${current_layout}" ;;
+    dwindle)         _apply_bsp_layout "false" "${flags}" ;;
+    spiral)          _apply_bsp_layout "true"  "${flags}" ;;
+    grid)            apply_layout_grid ;;
+    main-center)     apply_layout_main_center ;;
+    main-vertical)   apply_layout_main_vertical ;;
+    main-horizontal) apply_layout_main_horizontal ;;
+    deck)            apply_layout_deck ;;
+    monocle)         ;;
+    *)               log_error "hook" "Unknown layout for reapplication: ${current_layout}" ;;
   esac
 }
 
@@ -91,12 +128,14 @@ main() {
       local layout_name="${1:-}"
       local layout_flags="${2:-}"
       case "${layout_name}" in
-        dwindle)     apply_layout_dwindle "${layout_flags}" ;;
-        spiral)      apply_layout_spiral  "${layout_flags}" ;;
-        grid)        apply_layout_grid ;;
-        main-center) apply_layout_main_center ;;
-        monocle)     apply_layout_monocle ;;
-        deck)        apply_layout_deck ;;
+        dwindle)         apply_layout_dwindle "${layout_flags}" ;;
+        spiral)          apply_layout_spiral  "${layout_flags}" ;;
+        grid)            apply_layout_grid ;;
+        main-center)     apply_layout_main_center ;;
+        main-vertical)   apply_layout_main_vertical ;;
+        main-horizontal) apply_layout_main_horizontal ;;
+        monocle)         apply_layout_monocle ;;
+        deck)            apply_layout_deck ;;
         *)
           log_error "tiling" "Unknown layout: ${layout_name}"
           exit 1
@@ -111,6 +150,9 @@ main() {
     circulate)  circulate_panes "${1:-next}" ;;
     autosplit)  autosplit_pane ;;
     focus-resize) focus_resize_pane ;;
+    resize-master) resize_master "${1:-grow}" ;;
+    sync)       sync_panes ;;
+    swap)       swap_pane_direction "${1:-R}" ;;
     cycle)      cycle_layout "${1:-next}" ;;
     mark)       mark_pane "${1:-}" ;;
     unmark)     unmark_pane "${1:-}" ;;

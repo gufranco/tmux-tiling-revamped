@@ -35,9 +35,15 @@ create_panes() {
   local count="${1:-3}"
   local i
   for (( i=1; i<count; i++ )); do
-    command tmux -S "${TMUX_SOCKET}" split-window -d 2>/dev/null
+    command tmux -S "${TMUX_SOCKET}" split-window -d 2>/dev/null || {
+      # Vertical split ran out of space; try horizontal
+      command tmux -S "${TMUX_SOCKET}" split-window -dh 2>/dev/null || return 1
+    }
+    # Redistribute space every 3 splits to allow more panes
+    if (( i % 3 == 0 )); then
+      command tmux -S "${TMUX_SOCKET}" select-layout tiled 2>/dev/null || true
+    fi
   done
-  # Let panes settle
   sleep 0.1
 }
 

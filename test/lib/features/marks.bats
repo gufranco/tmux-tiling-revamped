@@ -87,3 +87,21 @@ teardown() {
   run mark_pane '!@#$%'
   [[ "${status}" -ne 0 ]]
 }
+
+@test "marks.sh - unmark_pane by name with existing marks succeeds" {
+  export MOCK_TILING_MARKS="editor:%2;build:%3"
+  run unmark_pane "editor"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "marks.sh - unmark_pane by name with nonexistent mark succeeds" {
+  export MOCK_TILING_MARKS="editor:%2"
+  run unmark_pane "nonexistent"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "marks.sh - jump_to_mark with multiple marks succeeds" {
+  export MOCK_TILING_MARKS="editor:%2;build:%3"
+  run jump_to_mark "build"
+  [[ "${status}" -eq 0 ]]
+}

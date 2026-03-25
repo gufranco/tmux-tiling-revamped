@@ -258,6 +258,12 @@ _apply_bsp_layout() {
 
   tmux select-layout "${checksum},${layout_body}" 2>/dev/null
 
+  # Fix pane-to-leaf mapping for spiral layouts where reversed splits
+  # cause the leaf order to diverge from BSP depth order
+  if $is_spiral; then
+    _bsp_fix_pane_order "${panes[@]}"
+  fi
+
   # Restore pane selection
   [[ -n "${selected_pane}" ]] && tmux select-pane -t "${selected_pane}" 2>/dev/null || true
 }

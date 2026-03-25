@@ -32,9 +32,9 @@ toggle_scratchpad() {
 
   local popup_cmd
   if [[ -n "${cmd}" ]]; then
-    popup_cmd="tmux new-session -A -s ${session_name} ${cmd}"
+    popup_cmd="tmux new-session -A -s '${session_name}' '${cmd}'"
   else
-    popup_cmd="tmux new-session -A -s ${session_name}"
+    popup_cmd="tmux new-session -A -s '${session_name}'"
   fi
 
   tmux display-popup \

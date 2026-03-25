@@ -60,14 +60,25 @@ unmark_pane() {
   local marks
   marks=$(get_tmux_option "@tiling_revamped_marks" "")
 
+  # Look up pane ID for the named mark so we can clear its pane option
+  local target_pane=""
   local cleaned=""
   while IFS= read -r entry; do
     [[ -z "${entry}" ]] && continue
     local entry_name="${entry%%:*}"
-    [[ "${entry_name}" != "${name}" ]] && cleaned="${cleaned:+${cleaned};}${entry}"
+    if [[ "${entry_name}" == "${name}" ]]; then
+      target_pane="${entry##*:}"
+    else
+      cleaned="${cleaned:+${cleaned};}${entry}"
+    fi
   done < <(echo "${marks}" | tr ';' '\n')
 
   set_tmux_option "@tiling_revamped_marks" "${cleaned}"
+
+  # Clear the pane option on the target pane
+  if [[ -n "${target_pane}" ]]; then
+    set_pane_option "@tiling_revamped_mark" "" "${target_pane}"
+  fi
 }
 
 jump_to_mark() {

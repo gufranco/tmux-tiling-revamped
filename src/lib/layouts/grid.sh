@@ -16,9 +16,9 @@ apply_layout_grid() {
 
   (( pane_count <= 1 )) && { set_current_layout "grid"; return 0; }
 
+  trap 'set_applying 0' RETURN
   set_applying 1
   tmux select-layout tiled 2>/dev/null || true
-  set_applying 0
   set_current_layout "grid"
 }
 

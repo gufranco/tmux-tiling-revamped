@@ -48,6 +48,8 @@ apply_layout_main_center() {
         echo "select-pane -t ${panes[1]}"
         echo "move-pane -h -b -s ${panes[1]} -t ${panes[0]}"
         echo "resize-pane -t ${panes[1]} -x ${side_width}"
+        # Re-resize center after move-pane resets widths
+        echo "resize-pane -t ${panes[0]} -x ${main_width}"
       fi
 
       [[ -n "${selected_pane}" ]] && echo "select-pane -t ${selected_pane}"

@@ -145,6 +145,21 @@ teardown() {
   [[ "${perm}" != "0 1 2 3 4" ]]
 }
 
+@test "spiral.sh - _bsp_fix_pane_order function exists" {
+  function_exists _bsp_fix_pane_order
+}
+
+@test "spiral.sh - _bsp_fix_pane_order is callable with pane list" {
+  run _bsp_fix_pane_order "%0" "%1" "%2" "%3" "%4"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "spiral.sh - apply_layout_spiral with 5 panes invokes pane ordering" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3\n%4'
+  run apply_layout_spiral "brvs"
+  [[ "${status}" -eq 0 ]]
+}
+
 @test "spiral.sh - spiral and dwindle share first two pane positions" {
   local corner_tb='' spiral_tb='+' corner_lr='' spiral_lr='+' modulo_hv=1
 

@@ -804,7 +804,7 @@ set -g @tiling_revamped_key_swap_right ""
 
 ### i3-style Alt Keybindings
 
-Enable built-in Alt key mode to bind all actions to `Alt+<key>` without the prefix:
+Enable Alt key mode to bind all actions to `Alt+<key>` without the prefix:
 
 ```tmux
 set -g @tiling_revamped_alt_keys 1
@@ -821,19 +821,60 @@ bind -n M-m run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh promot
 bind -n M-o run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh cycle"
 ```
 
-### macOS: Configuring the Option Key as Meta
+> **macOS users**: Alt keybindings have two layers of problems on macOS. Read the [macOS section](#macos-option-key-as-meta) before enabling this mode. Prefix mode is the recommended approach on macOS.
 
-On macOS, the Option (Alt) key does not send Meta/ESC sequences by default. Instead, it inserts special Unicode characters. For example, Option+g produces `©` instead of the `ESC g` sequence that tmux expects for `M-g` bindings.
+### Avoiding Key Conflicts in Prefix Mode
 
-This affects all `Alt+<key>` bindings in tmux, including alt key mode and vim-aware navigation. Without the fix below, none of the `M-` keybindings will work on macOS.
+Several default keys conflict with common tmux bindings. The table below lists every conflict and a tested alternative.
 
-#### Why This Happens
+| Default Key | Conflicts With | Suggested Alternative |
+|:------------|:---------------|:----------------------|
+| `b` (balance) | `prefix + b` lists paste buffers | `=` |
+| `M` (mark) | `prefix + M` is often used for scrollback | `N` |
+| `j` (jump) | `prefix + j` navigates panes down | `G` |
+| `+` (master grow) | `prefix + +` maximizes pane (zoom) | `}` |
+| `-` (master shrink) | `prefix + -` splits vertically | `{` |
+| `S` (sync) | `prefix + S` is commonly bound to sync-panes | `""` (disable, use your existing binding) |
+| `.` (rotate) | `prefix + .` moves pane to another window | `R` |
+| `,` (flip) | `prefix + ,` renames window | `F` |
+| `C-r` (circulate) | `prefix + C-r` is not commonly bound | `C-n` |
 
-Terminal emulators on macOS follow Apple's input method convention: the Option key is a modifier for accented characters and symbols. When you press Option+e followed by a vowel, you get an accented letter. This is useful for typing in languages like French, Spanish, and Portuguese, but it means the Option key never reaches tmux as a Meta modifier.
+A full conflict-free configuration for users who have vim-style navigation, split keybindings, and buffer management:
 
-tmux `M-g` means "Meta+g", which the terminal must send as the two-byte sequence `ESC g` (0x1B followed by 0x67). When the terminal sends `©` (0xC2 0xA9) instead, tmux sees an unknown character and ignores it.
+```tmux
+set -g @tiling_revamped_key_dwindle         "d"
+set -g @tiling_revamped_key_spiral          "D"
+set -g @tiling_revamped_key_main_vertical   "v"
+set -g @tiling_revamped_key_main_horizontal "V"
+set -g @tiling_revamped_key_balance         "="
+set -g @tiling_revamped_key_equalize        "B"
+set -g @tiling_revamped_key_promote         "m"
+set -g @tiling_revamped_key_rotate          "R"
+set -g @tiling_revamped_key_flip            "F"
+set -g @tiling_revamped_key_circulate       "C-n"
+set -g @tiling_revamped_key_autotile        "C-d"
+set -g @tiling_revamped_key_cycle           "o"
+set -g @tiling_revamped_key_master_grow     "}"
+set -g @tiling_revamped_key_master_shrink   "{"
+set -g @tiling_revamped_key_sync            ""
+set -g @tiling_revamped_key_mark            "N"
+set -g @tiling_revamped_key_jump            "G"
+set -g @tiling_revamped_key_scratchpad      "g"
+```
 
-#### Fixing iTerm2
+Set any key to `""` (empty string) to disable that binding entirely.
+
+### macOS: Option Key as Meta
+
+Alt keybindings on macOS face two separate problems. Both must be solved for Alt mode or vim-aware navigation to work.
+
+#### Problem 1: Option Key Sends Unicode Instead of Meta
+
+macOS terminal emulators follow Apple's input method convention: the Option key is a modifier for accented characters and symbols. When you press Option+e followed by a vowel, you get an accented letter. When you press Option+g, you get `©`. This is useful for multilingual input, but it means the Option key never reaches tmux as a Meta modifier.
+
+tmux `M-g` means "Meta+g", which the terminal must send as the two-byte sequence `ESC g` (0x1B followed by 0x67). When the terminal sends `©` (0xC2 0xA9) instead, tmux receives an unknown character and ignores it.
+
+**Fixing iTerm2:**
 
 1. Open **iTerm2 > Settings** (Cmd+,)
 2. Go to **Profiles > Keys > General**
@@ -841,7 +882,7 @@ tmux `M-g` means "Meta+g", which the terminal must send as the two-byte sequence
 4. Repeat for **Right Option key** if you want both sides to work as Meta
 5. Close Settings
 
-#### Fixing Terminal.app
+**Fixing Terminal.app:**
 
 1. Open **Terminal > Settings** (Cmd+,)
 2. Go to **Profiles** and select your active profile
@@ -849,7 +890,7 @@ tmux `M-g` means "Meta+g", which the terminal must send as the two-byte sequence
 4. Check **"Use Option as Meta key"**
 5. Close Settings
 
-#### Fixing Kitty
+**Fixing Kitty:**
 
 Kitty on macOS sends Option key as Meta by default. No configuration change is needed. If it was changed, verify `~/.config/kitty/kitty.conf` contains:
 
@@ -857,7 +898,7 @@ Kitty on macOS sends Option key as Meta by default. No configuration change is n
 macos_option_as_alt yes
 ```
 
-#### Fixing Ghostty
+**Fixing Ghostty:**
 
 Add to `~/.config/ghostty/config`:
 
@@ -865,11 +906,11 @@ Add to `~/.config/ghostty/config`:
 macos-option-as-alt = true
 ```
 
-#### Fixing Alacritty
+**Fixing Alacritty:**
 
 Alacritty on macOS does not require configuration. Option keys are sent as Alt/Meta by default.
 
-#### Fixing WezTerm
+**Fixing WezTerm:**
 
 Add to `~/.config/wezterm/wezterm.lua`:
 
@@ -878,31 +919,71 @@ config.send_composed_key_when_left_alt_is_pressed = false
 config.send_composed_key_when_right_alt_is_pressed = false
 ```
 
-#### After Changing the Setting
+**After changing the setting:**
 
-The terminal emulator change does not propagate to already-running tmux sessions. tmux caches terminal capabilities when a client first connects. To pick up the new setting:
+tmux caches terminal capabilities when a client first connects. The new setting does not propagate to already-attached clients.
 
-1. Detach from tmux: `Prefix + d` or run `tmux detach`
-2. Close the terminal tab or window
+1. Detach from tmux: `prefix + d` or run `tmux detach`
+2. Close the terminal tab or window entirely
 3. Open a new terminal window
 4. Reattach: `tmux attach`
 
-Alternatively, kill the tmux server entirely and start fresh:
+Alternatively, kill the tmux server and start fresh:
 
 ```bash
 tmux kill-server
 tmux new-session
 ```
 
-#### Trade-off
-
-Switching Option to Esc+ means you lose the ability to type special characters via Option+key in the terminal. Accented letters, currency symbols, and typographic characters that macOS normally produces through Option combinations will no longer be available through the Option modifier inside terminal applications.
-
-For most development workflows this is acceptable. If you need occasional special character input, you can:
+**Trade-off:** switching Option to Esc+ disables special character input via Option+key inside the terminal. Accented letters, currency symbols, and typographic characters produced through Option combinations will no longer work. Workarounds:
 
 - Use the macOS Character Viewer (Ctrl+Cmd+Space) to insert special characters
-- Configure only the **left** Option key as Esc+ and keep the **right** Option key as "Normal" for special characters
-- Switch the setting back temporarily when needed
+- Configure only the **left** Option key as Esc+ and keep the **right** Option key as "Normal" for special character input
+
+#### Problem 2: Terminal Emulator Shortcuts Intercept Alt Keys
+
+Even after fixing Problem 1, some terminal emulators reserve specific Alt+key combinations for their own built-in features. These shortcuts are intercepted by the terminal before the keypress reaches tmux. tmux never sees the key, so the binding never fires.
+
+iTerm2 is the most common offender. It reserves several Alt+key shortcuts by default:
+
+| iTerm2 Shortcut | Action |
+|:----------------|:-------|
+| Option+Enter | Toggle fullscreen |
+| Option+Left/Right | Move cursor by word |
+| Option+Delete | Delete word backward |
+
+Other terminal emulators may have similar reserved shortcuts. The specific keys vary by terminal and version.
+
+**How to check which keys are intercepted:**
+
+1. Open tmux in your terminal
+2. Run `tmux bind -n M-x display-message "M-x works"` (replace `x` with the key you want to test)
+3. Press Alt+x
+4. If no message appears, the terminal is intercepting that key
+
+**Fixing iTerm2:**
+
+1. Open **iTerm2 > Settings** (Cmd+,)
+2. Go to **Keys > Key Bindings**
+3. Find any binding that uses **Option** as modifier
+4. Delete or rebind it to a different key combination
+
+Alternatively, go to **Profiles > Keys > Key Mappings** and check for profile-level Option bindings.
+
+**Fixing Ghostty, Kitty, WezTerm:**
+
+Check the application's keybinding configuration for any bindings using Alt/Option as modifier. Remove or rebind any that conflict with your tmux Alt bindings.
+
+#### Recommended Approach for macOS
+
+Because of the two layers of interception, **prefix mode is the most reliable approach on macOS**. It avoids both problems entirely: prefix-based bindings do not use Alt/Meta at all.
+
+If you still prefer Alt mode, you need to:
+
+1. Fix Problem 1 for your terminal emulator (Option as Esc+)
+2. Fix Problem 2 by removing conflicting terminal shortcuts
+3. Restart tmux (detach, close terminal, reopen, reattach)
+4. Test each binding individually using the method described above
 
 ### Vim-Aware Navigation
 
@@ -912,7 +993,9 @@ Enable seamless navigation between tmux panes and vim splits. When the active pa
 set -g @tiling_revamped_navigator 1
 ```
 
-This registers `Alt+h/j/k/l` for directional navigation with automatic vim detection via `#{pane_current_command}` inspection.
+This registers `Alt+h/j/k/l` for directional navigation with automatic vim detection via process inspection.
+
+> **macOS users**: this feature uses Alt keybindings (`M-h/j/k/l`). The [macOS Option key configuration](#macos-option-key-as-meta) is required. Both Problem 1 (Option as Esc+) and Problem 2 (terminal shortcut interception) must be resolved for navigation to work.
 
 ## CLI
 

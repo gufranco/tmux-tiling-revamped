@@ -14,7 +14,13 @@ PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TILING_CMD="${PLUGIN_DIR}/src/tiling.sh"
 
 _get_option() {
-  tmux show-option -gqv "${1}" 2>/dev/null || echo "${2:-}"
+  local value
+  value="$(tmux show-option -gqv "${1}" 2>/dev/null)"
+  if [[ -n "${value}" ]]; then
+    echo "${value}"
+  else
+    echo "${2:-}"
+  fi
 }
 
 _bind() {

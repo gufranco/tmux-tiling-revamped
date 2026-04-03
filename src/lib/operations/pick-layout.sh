@@ -3,11 +3,11 @@
 # pick-layout.sh: Interactive fzf-based layout picker for tmux-tiling-revamped.
 #
 # Requirements:
-#   - fzf >= 0.44.0 (for --tmux flag support)
-#   - fzf >= 0.19.0 (for --preview flag support)
+#   - fzf >= 0.44.0 (for --tmux popup and --preview support)
 #
 # Features:
-#   - ASCII diagram preview for each layout
+#   - ASCII diagram preview for each layout (loaded from exported variables)
+#   - Current layout highlighted in header and pre-selected
 #   - Logical grouping: BSP layouts first, then standard, main, special
 #   - Graceful cancellation on Escape (exit code 130)
 #   - Configurable popup dimensions via @tiling_revamped_pick_width/height
@@ -23,6 +23,7 @@ source "${LIB_DIR}/utils/constants.sh"
 source "${LIB_DIR}/utils/has-command.sh"
 source "${LIB_DIR}/utils/error-logger.sh"
 source "${LIB_DIR}/layouts/dwindle.sh"
+source "${LIB_DIR}/layouts/spiral.sh"
 source "${LIB_DIR}/layouts/grid.sh"
 source "${LIB_DIR}/layouts/main-center.sh"
 source "${LIB_DIR}/layouts/main-vertical.sh"
@@ -42,17 +43,26 @@ readonly PICK_LAYOUTS=(
   "deck"
 )
 
-# _fzf_supports_preview: Check if fzf supports the --preview flag (>= 0.19.0)
-_fzf_supports_preview() {
+# _fzf_supports_tmux_popup: Check if fzf supports the --tmux flag (>= 0.44.0)
+_fzf_supports_tmux_popup() {
   local fzf_version
   fzf_version=$(fzf --version 2>/dev/null | cut -d' ' -f1)
-  [[ -z "$fzf_version" ]] && return 1
-  printf '%s\n%s\n' "0.19.0" "$fzf_version" | sort -V -C 2>/dev/null
+  [[ -z "${fzf_version}" ]] && return 1
+  printf '%s\n%s\n' "0.44.0" "${fzf_version}" | sort -V -C 2>/dev/null
 }
 
 # _get_layout_list: Generate layout list
 _get_layout_list() {
   printf '%s\n' "${PICK_LAYOUTS[@]}"
+}
+
+# _get_layout_preview: Print the ASCII preview for a layout name.
+# Reads from TILING_PREVIEW_* exported variables in each layout module.
+_get_layout_preview() {
+  local layout="${1:-}"
+  local varname="TILING_PREVIEW_${layout^^}"
+  varname="${varname//-/_}"
+  echo "${!varname:-No preview available}"
 }
 
 # _pick_with_fzf_tmux: Use fzf's native --tmux popup
@@ -62,27 +72,35 @@ _pick_with_fzf_tmux() {
   height=$(get_tmux_option "@tiling_revamped_pick_height" "${TILING_DEFAULT_PICK_HEIGHT}")
   preview_width=$(get_tmux_option "@tiling_revamped_pick_preview_width" "${TILING_DEFAULT_PICK_PREVIEW_WIDTH}")
 
-  # Check if fzf supports preview
-  if ! _fzf_supports_preview; then
-    log_error "pick-layout" "fzf >= 0.19.0 required for preview support"
+  if ! _fzf_supports_tmux_popup; then
+    log_error "pick-layout" "fzf >= 0.44.0 required for layout picker"
     return 1
   fi
 
-  local preview_dir="${LIB_DIR}/operations/layout-previews"
+  local current
+  current=$(get_current_layout)
+
+  local fzf_args=(
+    --tmux "center,${width},${height}"
+    --prompt="Select layout: "
+    --exit-0
+    --preview="_get_layout_preview {}"
+    --preview-window="right:${preview_width}"
+  )
+
+  [[ -n "${current}" ]] && fzf_args+=(
+    --header="Current: ${current}"
+    --select="${current}"
+  )
 
   local selected
-  # Use bash -c with $1 to properly handle fzf's {} placeholder
-  selected=$(_get_layout_list | fzf --tmux "center,${width},${height}" \
-    --prompt="Select layout: " \
-    --exit-0 \
-    --preview="bash -c 'cat \"${preview_dir}/\$1.txt\"' -- {}" \
-    --preview-window="right:${preview_width}" 2>/dev/null)
+  selected=$(_get_layout_list | fzf "${fzf_args[@]}" 2>/dev/null)
 
   local exit_code=$?
-  [[ $exit_code -eq 130 ]] && return 130  # User cancelled
-  [[ $exit_code -ne 0 ]] && return 1       # Other error
+  [[ ${exit_code} -eq 130 ]] && return 130
+  [[ ${exit_code} -ne 0 ]] && return 1
 
-  echo "$selected"
+  echo "${selected}"
 }
 
 # pick_layout: Main entry point - shows fzf picker and applies selected layout
@@ -99,25 +117,17 @@ pick_layout() {
   pick_exit_code=$?
 
   # Graceful cancellation on Escape or empty selection
-  [[ $pick_exit_code -eq 130 ]] && return 0
-  [[ -z "$selected" ]] && return 0
+  [[ ${pick_exit_code} -eq 130 ]] && return 0
+  [[ -z "${selected}" ]] && return 0
 
-  # Extract layout name
-  local layout_name="$selected"
+  local layout_name="${selected}"
 
-  # Get current orientation flags for BSP layouts
-  local flags
-  flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
-
-  # Apply selected layout
-  case "$layout_name" in
+  case "${layout_name}" in
     dwindle)
-      _apply_bsp_layout "false" "$flags"
-      set_current_layout "dwindle"
+      apply_layout_dwindle ""
       ;;
     spiral)
-      _apply_bsp_layout "true" "$flags"
-      set_current_layout "spiral"
+      apply_layout_spiral ""
       ;;
     grid)
       apply_layout_grid
@@ -138,10 +148,11 @@ pick_layout() {
       apply_layout_deck
       ;;
     *)
-      log_error "pick-layout" "Unknown layout: $layout_name"
+      log_error "pick-layout" "Unknown layout: ${layout_name}"
       return 1
       ;;
   esac
 }
 
+export -f _get_layout_preview
 export -f pick_layout

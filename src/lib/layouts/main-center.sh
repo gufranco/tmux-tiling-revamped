@@ -59,4 +59,15 @@ apply_layout_main_center() {
   set_current_layout "main-center"
 }
 
+readonly TILING_PREVIEW_MAIN_CENTER='Main-Center (4 panes)
+┌───────┬───────────────────┬───────┐
+│       │                   │   3   │
+│       │                   ├───────┤
+│   2   │         1         │   4   │
+│       │                   │       │
+│       │                   │       │
+└───────┴───────────────────┴───────┘
+Wide center pane'
+export TILING_PREVIEW_MAIN_CENTER
+
 export -f apply_layout_main_center

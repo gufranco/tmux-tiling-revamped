@@ -64,6 +64,13 @@ readonly OPT_PICK_WIDTH="@tiling_revamped_pick_width"
 readonly OPT_PICK_HEIGHT="@tiling_revamped_pick_height"
 readonly OPT_PICK_PREVIEW_WIDTH="@tiling_revamped_pick_preview_width"
 
+# Undo
+readonly OPT_KEY_UNDO="@tiling_revamped_key_undo"
+readonly OPT_LAYOUT_HISTORY="@tiling_revamped_layout_history"
+
+# Split ratio
+readonly OPT_SPLIT_RATIO="@tiling_revamped_split_ratio"
+
 # Layout picker defaults
 readonly TILING_DEFAULT_PICK_WIDTH="60%"
 readonly TILING_DEFAULT_PICK_HEIGHT="40%"

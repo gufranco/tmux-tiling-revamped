@@ -42,6 +42,10 @@ get_current_layout() {
 }
 
 set_current_layout() {
+  # Push current layout to history before changing (if undo module is loaded)
+  if declare -f push_layout_history &>/dev/null; then
+    push_layout_history
+  fi
   set_window_option "@tiling_revamped_layout" "${1}"
 }
 
@@ -63,6 +67,38 @@ set_applying() {
   set_tmux_option "@tiling_revamped_applying" "${1:-1}"
 }
 
+# _reapply_current_layout: re-apply the stored layout with current flags.
+# Used by operations (promote, circulate, swap) that change pane positions
+# and need to re-apply the layout to fix sizes.
+_reapply_current_layout() {
+  local current_layout
+  current_layout=$(get_current_layout)
+  [[ -z "${current_layout}" ]] && return 0
+
+  local flags
+  flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
+
+  case "${current_layout}" in
+    dwindle) _apply_bsp_layout "false" "${flags}" ;;
+    spiral)  _apply_bsp_layout "true"  "${flags}" ;;
+    grid)
+      set_applying 1
+      tmux select-layout tiled 2>/dev/null || true
+      set_applying 0
+      ;;
+    deck)
+      set_applying 1
+      tmux select-layout even-horizontal 2>/dev/null || true
+      set_applying 0
+      ;;
+    main-vertical)   apply_layout_main_vertical ;;
+    main-horizontal) apply_layout_main_horizontal ;;
+    main-center)     apply_layout_main_center ;;
+    *)       ;;
+  esac
+}
+
+export -f _reapply_current_layout
 export -f is_option_enabled
 export -f is_window_option_enabled
 export -f get_numeric_option

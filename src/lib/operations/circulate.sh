@@ -31,29 +31,7 @@ circulate_panes() {
     tmux rotate-window -U 2>/dev/null || true
   fi
 
-  local current_layout
-  current_layout=$(get_current_layout)
-  local flags
-  flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
-
-  case "${current_layout}" in
-    dwindle) _apply_bsp_layout "false" "${flags}" ;;
-    spiral)  _apply_bsp_layout "true"  "${flags}" ;;
-    grid)
-      set_applying 1
-      tmux select-layout tiled 2>/dev/null || true
-      set_applying 0
-      ;;
-    deck)
-      set_applying 1
-      tmux select-layout even-horizontal 2>/dev/null || true
-      set_applying 0
-      ;;
-    main-vertical)   apply_layout_main_vertical ;;
-    main-horizontal) apply_layout_main_horizontal ;;
-    main-center)     apply_layout_main_center ;;
-    *)       ;;
-  esac
+  _reapply_current_layout
 
   # Restore focus to the same pane (it may have moved slots)
   tmux select-pane -t "${selected_pane}" 2>/dev/null || true

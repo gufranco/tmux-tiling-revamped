@@ -27,6 +27,7 @@
 #   tiling.sh swap    [U|D|L|R]
 #   tiling.sh cycle   [next|prev]
 #   tiling.sh pick
+#   tiling.sh undo
 #   tiling.sh mark    <name>
 #   tiling.sh unmark  [name]
 #   tiling.sh jump    [name]
@@ -62,6 +63,7 @@ source "${PLUGIN_DIR}/src/lib/operations/resize-master.sh"
 source "${PLUGIN_DIR}/src/lib/operations/sync.sh"
 source "${PLUGIN_DIR}/src/lib/operations/swap-direction.sh"
 source "${PLUGIN_DIR}/src/lib/operations/pick-layout.sh"
+source "${PLUGIN_DIR}/src/lib/operations/undo-layout.sh"
 source "${PLUGIN_DIR}/src/lib/features/marks.sh"
 source "${PLUGIN_DIR}/src/lib/features/scratchpad.sh"
 source "${PLUGIN_DIR}/src/lib/features/presets.sh"
@@ -154,6 +156,7 @@ main() {
     swap)       swap_pane_direction "${1:-R}" ;;
     cycle)      cycle_layout "${1:-next}" ;;
     pick)       pick_layout ;;
+    undo)       undo_layout ;;
     mark)       mark_pane "${1:-}" ;;
     unmark)     unmark_pane "${1:-}" ;;
     jump)       jump_to_mark "${1:-}" ;;

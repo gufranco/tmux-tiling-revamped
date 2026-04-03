@@ -84,7 +84,7 @@ _bsp_leaf_permutation() {
 # _bsp_build: recursively build a tmux layout string for BSP tiling.
 #
 # Uses parent-scoped: modulo_hv, is_spiral, corner_tb, corner_lr,
-# spiral_tb, spiral_lr.
+# spiral_tb, spiral_lr, bsp_split_ratio.
 _bsp_build() {
   local pane_ids_str="$1"
   local x=$2 y=$3 w=$4 h=$5
@@ -108,10 +108,16 @@ _bsp_build() {
   local pane_first
   pane_first=$(_bsp_pane_first "$depth")
 
+  # At depth 0, use the configurable split ratio. Deeper levels use 50/50.
+  local ratio=50
+  if (( depth == 0 )); then
+    ratio="${bsp_split_ratio:-50}"
+  fi
+
   local first_str second_str
 
   if $is_hsplit; then
-    local lw=$(( (w - 1) / 2 ))
+    local lw=$(( (w - 1) * ratio / 100 ))
     local rw=$(( w - lw - 1 ))
     local lx=$x
     local rx=$(( x + lw + 1 ))
@@ -125,7 +131,7 @@ _bsp_build() {
     fi
     echo "${w}x${h},${x},${y}{${first_str},${second_str}}"
   else
-    local th=$(( (h - 1) / 2 ))
+    local th=$(( (h - 1) * ratio / 100 ))
     local bh=$(( h - th - 1 ))
     local ty=$y
     local by=$(( y + th + 1 ))
@@ -245,6 +251,10 @@ _apply_bsp_layout() {
   local window_width window_height
   window_width=$(tmux display-message -p '#{window_width}' 2>/dev/null || echo "80")
   window_height=$(tmux display-message -p '#{window_height}' 2>/dev/null || echo "24")
+
+  # Configurable first-split ratio (depth 0 only, default 50/50)
+  local bsp_split_ratio
+  bsp_split_ratio=$(get_numeric_option "@tiling_revamped_split_ratio" "${TILING_DEFAULT_SPLIT_RATIO}" "20" "80")
 
   trap 'set_applying 0' RETURN
   set_applying 1

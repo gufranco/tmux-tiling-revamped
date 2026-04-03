@@ -86,6 +86,7 @@ _setup_keybindings() {
   local key_swap_left;      key_swap_left=$(     _get_option "@tiling_revamped_key_swap_left"       "")
   local key_swap_right;     key_swap_right=$(    _get_option "@tiling_revamped_key_swap_right"      "")
   local key_pick_layout;    key_pick_layout=$(   _get_option "@tiling_revamped_key_pick_layout"    "p")
+  local key_undo;           key_undo=$(          _get_option "@tiling_revamped_key_undo"            "u")
 
   _bind "${alt_keys}" "${key_dwindle}"        "${TILING_CMD} layout dwindle"
   _bind "${alt_keys}" "${key_spiral}"         "${TILING_CMD} layout spiral"
@@ -117,6 +118,9 @@ _setup_keybindings() {
 
   # Layout picker binding (empty key = disabled)
   [[ -n "${key_pick_layout}" ]] && _bind "${alt_keys}" "${key_pick_layout}" "${TILING_CMD} pick"
+
+  # Undo binding (empty key = disabled)
+  [[ -n "${key_undo}" ]] && _bind "${alt_keys}" "${key_undo}" "${TILING_CMD} undo"
 }
 
 _setup_hooks() {

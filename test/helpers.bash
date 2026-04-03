@@ -38,6 +38,7 @@ setup_test_environment() {
   unset _TILING_REVAMPED_PICK_LAYOUT_LOADED
   unset _TILING_REVAMPED_CYCLE_LOADED
   unset _TILING_REVAMPED_PRESETS_LOADED
+  unset _TILING_REVAMPED_UNDO_LAYOUT_LOADED
 }
 
 cleanup_test_environment() {
@@ -100,6 +101,10 @@ tmux() {
           echo "${MOCK_TILING_RESIZE_STEP:-5}" ;;
         @tiling_revamped_default_layout)
           echo "${MOCK_TILING_DEFAULT_LAYOUT:-}" ;;
+        @tiling_revamped_layout_history)
+          echo "${MOCK_TILING_LAYOUT_HISTORY:-}" ;;
+        @tiling_revamped_split_ratio)
+          echo "${MOCK_TILING_SPLIT_RATIO:-50}" ;;
         @tiling_revamped_pick_width)
           echo "${MOCK_TILING_PICK_WIDTH:-60%}" ;;
         @tiling_revamped_pick_height)

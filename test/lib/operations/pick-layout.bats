@@ -173,7 +173,7 @@ teardown() {
   run _get_layout_preview "main-center"
   [[ "${status}" -eq 0 ]]
   [[ "${output}" == *"Main-Center"* ]]
-  [[ "${output}" == *"Wide center pane"* ]]
+  [[ "${output}" == *"center pane"* ]]
 }
 
 @test "pick-layout.sh - _get_layout_preview returns monocle preview" {

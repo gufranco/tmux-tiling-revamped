@@ -22,4 +22,17 @@ apply_layout_grid() {
   set_current_layout "grid"
 }
 
+readonly TILING_PREVIEW_GRID='Grid Layout (4 panes)
+┌───────────────────┬───────────────────┐
+│                   │                   │
+│         1         │         2         │
+│                   │                   │
+├───────────────────┼───────────────────┤
+│                   │                   │
+│         3         │         4         │
+│                   │                   │
+└───────────────────┴───────────────────┘
+Even N x M grid distribution'
+export TILING_PREVIEW_GRID
+
 export -f apply_layout_grid

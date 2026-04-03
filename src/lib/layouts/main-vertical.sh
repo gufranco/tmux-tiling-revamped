@@ -34,4 +34,16 @@ apply_layout_main_vertical() {
   set_current_layout "main-vertical"
 }
 
+readonly TILING_PREVIEW_MAIN_VERTICAL='Main-Vertical (4 panes)
+┌───────────────────┬───────────────────┐
+│                   │         2         │
+│                   ├───────────────────┤
+│         1         │         3         │
+│                   ├───────────────────┤
+│                   │         4         │
+│                   │                   │
+└───────────────────┴───────────────────┘
+Master left, stack right'
+export TILING_PREVIEW_MAIN_VERTICAL
+
 export -f apply_layout_main_vertical

@@ -33,4 +33,17 @@ apply_layout_monocle() {
   fi
 }
 
+readonly TILING_PREVIEW_MONOCLE='Monocle Layout
+┌───────────────────────────────────────┐
+│                                       │
+│                                       │
+│                  1                    │
+│              [ZOOMED]                 │
+│                                       │
+│                                       │
+└───────────────────────────────────────┘
+Zoom focused pane to fullscreen
+(other panes hidden behind)'
+export TILING_PREVIEW_MONOCLE
+
 export -f apply_layout_monocle

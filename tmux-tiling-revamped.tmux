@@ -88,8 +88,8 @@ _setup_keybindings() {
   [[ -n "${key_swap_left}" ]]  && _bind "${alt_keys}" "${key_swap_left}"  "${TILING_CMD} swap L"
   [[ -n "${key_swap_right}" ]] && _bind "${alt_keys}" "${key_swap_right}" "${TILING_CMD} swap R"
 
-  # Layout picker binding
-  _bind "${alt_keys}" "${key_pick_layout}" "${TILING_CMD} pick"
+  # Layout picker binding (empty key = disabled)
+  [[ -n "${key_pick_layout}" ]] && _bind "${alt_keys}" "${key_pick_layout}" "${TILING_CMD} pick"
 }
 
 _setup_hooks() {

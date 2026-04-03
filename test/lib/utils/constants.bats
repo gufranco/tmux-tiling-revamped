@@ -94,6 +94,28 @@ teardown() {
   [[ -n "${OPT_KEY_SWAP_RIGHT}" ]]
 }
 
+@test "constants.sh - layout picker option constants are set" {
+  [[ -n "${OPT_KEY_PICK_LAYOUT}" ]]
+  [[ "${OPT_KEY_PICK_LAYOUT}" == "@tiling_revamped_key_pick_layout" ]]
+  [[ -n "${OPT_KEY_PICK_LAYOUT_ALT}" ]]
+  [[ "${OPT_KEY_PICK_LAYOUT_ALT}" == "@tiling_revamped_key_pick_layout_alt" ]]
+  [[ -n "${OPT_PICK_WIDTH}" ]]
+  [[ "${OPT_PICK_WIDTH}" == "@tiling_revamped_pick_width" ]]
+  [[ -n "${OPT_PICK_HEIGHT}" ]]
+  [[ "${OPT_PICK_HEIGHT}" == "@tiling_revamped_pick_height" ]]
+  [[ -n "${OPT_PICK_PREVIEW_WIDTH}" ]]
+  [[ "${OPT_PICK_PREVIEW_WIDTH}" == "@tiling_revamped_pick_preview_width" ]]
+}
+
+@test "constants.sh - layout picker default values are set" {
+  [[ -n "${TILING_DEFAULT_PICK_WIDTH}" ]]
+  [[ "${TILING_DEFAULT_PICK_WIDTH}" == "60%" ]]
+  [[ -n "${TILING_DEFAULT_PICK_HEIGHT}" ]]
+  [[ "${TILING_DEFAULT_PICK_HEIGHT}" == "40%" ]]
+  [[ -n "${TILING_DEFAULT_PICK_PREVIEW_WIDTH}" ]]
+  [[ "${TILING_DEFAULT_PICK_PREVIEW_WIDTH}" == "60%" ]]
+}
+
 @test "constants.sh - source guard prevents double loading" {
   [[ -n "${_TILING_REVAMPED_CONSTANTS_LOADED}" ]]
   [[ "${_TILING_REVAMPED_CONSTANTS_LOADED}" == "1" ]]

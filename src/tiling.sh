@@ -26,6 +26,7 @@
 #   tiling.sh sync
 #   tiling.sh swap    [U|D|L|R]
 #   tiling.sh cycle   [next|prev]
+#   tiling.sh pick
 #   tiling.sh mark    <name>
 #   tiling.sh unmark  [name]
 #   tiling.sh jump    [name]

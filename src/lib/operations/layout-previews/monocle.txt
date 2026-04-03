@@ -1,0 +1,11 @@
+Monocle Layout
+┌───────────────────────────────────────┐
+│                                       │
+│                                       │
+│                  1                    │
+│              [ZOOMED]                 │
+│                                       │
+│                                       │
+└───────────────────────────────────────┘
+Zoom focused pane to fullscreen
+(other panes hidden behind)

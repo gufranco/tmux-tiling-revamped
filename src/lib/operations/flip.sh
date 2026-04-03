@@ -25,16 +25,14 @@ flip_layout() {
       if [[ "${flags}" == *l* ]]; then
         flags="${flags//l/r}"
       else
-        flags="${flags//r/}"
-        flags="${flags}l"
+        flags="${flags//r/l}"
       fi
       ;;
     v)
       if [[ "${flags}" == *t* ]]; then
         flags="${flags//t/b}"
       else
-        flags="${flags//b/}"
-        flags="${flags}t"
+        flags="${flags//b/t}"
       fi
       ;;
     *)

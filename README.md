@@ -234,67 +234,70 @@ Wide center pane for the primary task, narrow side panes for secondary content. 
 └───────┴───────────────────────┴───────┘
 ```
 
-**5 panes**
+**5 panes (balanced sides)**
 
 ```
 ┌───────┬───────────────────────┬───────┐
-│       │                       │   3   │
-│       │                       ├───────┤
-│   2   │           1           │   4   │
-│       │                       ├───────┤
-│       │                       │   5   │
+│   2   │                       │   4   │
+│       │                       │       │
+├───────┤           1           ├───────┤
+│       │                       │       │
+│   3   │                       │   5   │
 └───────┴───────────────────────┴───────┘
 ```
 
+**7 panes (balanced sides)**
+
+```
+┌───────┬───────────────────────┬───────┐
+│   2   │                       │   5   │
+├───────┤                       ├───────┤
+│   3   │           1           │   6   │
+├───────┤                       ├───────┤
+│   4   │                       │   7   │
+└───────┴───────────────────────┴───────┘
+```
+
+Extra panes are distributed evenly between left and right columns. When the count is odd, the right column gets the extra pane.
+
 ### Monocle
 
-Zoom the focused pane to fill the entire window. Other panes are hidden behind the zoom. Press the same key again to toggle back to the previous layout.
+Zoom the focused pane to fill the entire window. Other panes are hidden behind the zoom. Press the same key again to toggle zoom off and restore the previous layout.
 
 ```
 ┌───────────────────────────────────────┐
 │                                       │
 │                                       │
-│               1 [zoom]                │
-│                                       │
+│                  1                    │
+│              [ZOOMED]                 │
 │                                       │
 │                                       │
 └───────────────────────────────────────┘
-        panes 2, 3, 4 behind zoom
+Zoom focused pane to fullscreen
+(other panes hidden behind)
 ```
 
 ### Deck
 
 All panes at full height, side by side at equal widths. Each pane is a "card" in the deck.
 
-**3 panes**
+**4 panes**
 
 ```
-┌────────────┬─────────────┬────────────┐
-│            │             │            │
-│            │             │            │
-│     1      │      2      │     3      │
-│            │             │            │
-│            │             │            │
-└────────────┴─────────────┴────────────┘
+┌───────────┬───────────┬───────────┬───┐
+│           │           │           │   │
+│           │           │           │   │
+│     1     │     2     │     3     │ 4 │
+│           │           │           │   │
+│           │           │           │   │
+└───────────┴───────────┴───────────┴───┘
 ```
 
 ### Main-Vertical
 
 One large left pane (master), remaining panes stacked vertically on the right. Wraps tmux's built-in `main-vertical` layout. Master size controlled by `@tiling_revamped_master_ratio`.
 
-**3 panes**
-
-```
-┌───────────────────┬───────────────────┐
-│                   │         2         │
-│                   │                   │
-│         1         ├───────────────────┤
-│                   │         3         │
-│                   │                   │
-└───────────────────┴───────────────────┘
-```
-
-**5 panes**
+**4 panes**
 
 ```
 ┌───────────────────┬───────────────────┐
@@ -303,8 +306,7 @@ One large left pane (master), remaining panes stacked vertically on the right. W
 │         1         │         3         │
 │                   ├───────────────────┤
 │                   │         4         │
-│                   ├───────────────────┤
-│                   │         5         │
+│                   │                   │
 └───────────────────┴───────────────────┘
 ```
 
@@ -312,28 +314,16 @@ One large left pane (master), remaining panes stacked vertically on the right. W
 
 One large top pane (master), remaining panes placed side by side below. Wraps tmux's built-in `main-horizontal` layout. Master size controlled by `@tiling_revamped_master_ratio`.
 
-**3 panes**
+**4 panes**
 
 ```
 ┌───────────────────────────────────────┐
 │                                       │
 │                  1                    │
 │                                       │
-├───────────────────┬───────────────────┤
-│         2         │         3         │
-└───────────────────┴───────────────────┘
-```
-
-**5 panes**
-
-```
-┌───────────────────────────────────────┐
-│                                       │
-│                  1                    │
-│                                       │
-├─────────┬─────────┬─────────┬─────────┤
-│    2    │    3    │    4    │    5    │
-└─────────┴─────────┴─────────┴─────────┘
+├───────────┬───────────┬───────────────┤
+│     2     │     3     │       4       │
+└───────────┴───────────┴───────────────┘
 ```
 
 ## BSP Orientation Flags
@@ -632,10 +622,10 @@ Swap the focused pane with its neighbor in a given direction (up, down, left, ri
 Step forward or backward through a configurable list of layouts. The cycle order is set via `@tiling_revamped_cycle_layouts`.
 
 ```
-       prefix+o    prefix+o    prefix+o       prefix+o          prefix+o
-dwindle --> spiral --> grid --> main-vertical --> main-horizontal --> main-center --+
-   ^                                                                               |
-   +--  monocle  <-----------------------------------------------------------------+
+       prefix+o    prefix+o    prefix+o       prefix+o          prefix+o          prefix+o      prefix+o
+dwindle --> spiral --> grid --> main-vertical --> main-horizontal --> main-center --> monocle --> deck --+
+   ^                                                                                                   |
+   +---------------------------------------------------------------------------------------------------+
 ```
 
 ### Pane Marks
@@ -767,7 +757,7 @@ All options use the `@tiling_revamped_` prefix.
 | `@tiling_revamped_master_ratio` | `60` | Master pane percentage for main-vertical and main-horizontal |
 | `@tiling_revamped_main_center_ratio` | `60` | Width percentage for main-center center pane |
 | `@tiling_revamped_resize_step` | `5` | Percentage step for resize-master grow/shrink |
-| `@tiling_revamped_cycle_layouts` | `dwindle spiral grid main-vertical main-horizontal main-center monocle` | Layout cycle order |
+| `@tiling_revamped_cycle_layouts` | `dwindle spiral grid main-vertical main-horizontal main-center monocle deck` | Layout cycle order |
 | `@tiling_revamped_alt_keys` | `0` | Use Alt keybindings (`M-<key>`) instead of prefix mode |
 | `@tiling_revamped_navigator` | `0` | Vim-aware navigation. Set to `1` to enable `M-h/j/k/l` with vim detection |
 | `@tiling_revamped_scratch_width` | `80%` | Scratchpad popup width |
@@ -877,7 +867,21 @@ Set any key to `""` (empty string) to disable that binding entirely.
 
 Interactive fzf-based layout picker with ASCII diagram previews. **Enabled by default** with key `p`.
 
-![Layout Picker](assets/fzf-picker.png)
+```
++--------------------------------------------------+
+| Select layout:                                    |
+|   > dwindle          | Dwindle Layout (4 panes)   |
+|     spiral           | +----------+-----------+   |
+|     grid             | |          |     2     |   |
+|     main-vertical    | |    1     +-----+-----+   |
+|     main-horizontal  | |          |  3  |  4  |   |
+|     main-center      | +----------+-----+-----+   |
+|     monocle          | BSP cascade toward corner   |
+|     deck             |                             |
+|                      |                             |
+|  Current: dwindle    |                             |
++--------------------------------------------------+
+```
 
 **Default binding:**
 ```tmux
@@ -912,7 +916,7 @@ end, { silent = true })
 ```
 
 **Preview Window:**
-The picker shows ASCII diagrams in a preview panel on the right side. Each layout displays a representative 4-pane configuration. The current layout is highlighted in the header and pre-selected.
+The picker shows ASCII diagrams in a preview panel on the right side. Each layout displays a representative configuration. The current layout is shown in the header.
 
 **Requirements:**
 - fzf >= 0.44.0 (for `--tmux` popup and `--preview` support)

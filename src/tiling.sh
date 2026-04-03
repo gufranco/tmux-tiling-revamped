@@ -76,12 +76,9 @@ _handle_hook() {
     default_layout=$(get_tmux_option "@tiling_revamped_default_layout" "")
     [[ -z "${default_layout}" ]] && return 0
 
-    local flags
-    flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
-
     case "${default_layout}" in
-      dwindle)         _apply_bsp_layout "false" "${flags}"; set_current_layout "dwindle" ;;
-      spiral)          _apply_bsp_layout "true"  "${flags}"; set_current_layout "spiral" ;;
+      dwindle)         apply_layout_dwindle "" ;;
+      spiral)          apply_layout_spiral "" ;;
       grid)            apply_layout_grid ;;
       main-center)     apply_layout_main_center ;;
       main-vertical)   apply_layout_main_vertical ;;

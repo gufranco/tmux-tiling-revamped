@@ -18,7 +18,7 @@ cycle_layout() {
 
   local layouts_str
   layouts_str=$(get_tmux_option "@tiling_revamped_cycle_layouts" \
-    "dwindle spiral grid main-vertical main-horizontal main-center monocle")
+    "dwindle spiral grid main-vertical main-horizontal main-center monocle deck")
 
   local -a layouts
   read -ra layouts <<< "${layouts_str}"

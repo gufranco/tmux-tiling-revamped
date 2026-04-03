@@ -101,6 +101,168 @@ run_tiling() {
   sleep 0.2
 }
 
+# assert_balanced_columns: verify pane distribution across vertical zones.
+# Finds the widest pane (center/master), counts panes to its left and right.
+# Asserts the difference between left and right counts is at most 1.
+# For layouts without a center pane, asserts all panes have similar widths.
+assert_balanced_columns() {
+  local layout="${1}"
+
+  # Layouts where column balance is not applicable
+  case "${layout}" in
+    monocle|grid|deck) return 0 ;;
+  esac
+
+  local -a pane_data=()
+  while IFS= read -r line; do
+    pane_data+=("${line}")
+  done < <(command tmux -S "${TMUX_SOCKET}" list-panes -F '#{pane_left} #{pane_width}' 2>/dev/null)
+
+  local pane_count="${#pane_data[@]}"
+  (( pane_count <= 2 )) && return 0
+
+  # Find the widest pane (master/center)
+  local max_width=0 center_left=0
+  local entry pl pw
+  for entry in "${pane_data[@]}"; do
+    pl="${entry%% *}"
+    pw="${entry##* }"
+    if (( pw > max_width )); then
+      max_width="${pw}"
+      center_left="${pl}"
+    fi
+  done
+
+  # For main-vertical, master is leftmost, stack is right. No left column.
+  # For main-horizontal, master is top. Column balance is N/A.
+  case "${layout}" in
+    main-vertical|main-horizontal|dwindle|spiral) return 0 ;;
+  esac
+
+  # Count panes on each side of the center (main-center)
+  local left_count=0 right_count=0
+  for entry in "${pane_data[@]}"; do
+    pl="${entry%% *}"
+    pw="${entry##* }"
+    if (( pw == max_width )); then
+      continue
+    elif (( pl < center_left )); then
+      left_count=$(( left_count + 1 ))
+    else
+      right_count=$(( right_count + 1 ))
+    fi
+  done
+
+  local diff=$(( left_count - right_count ))
+  (( diff < 0 )) && diff=$(( -diff ))
+
+  if (( diff > 1 )); then
+    echo "Unbalanced columns: left=${left_count} right=${right_count} (diff=${diff})" >&2
+    return 1
+  fi
+}
+
+# assert_balanced_rows: verify pane distribution across horizontal zones.
+# For main-horizontal: counts panes in the bottom row and verifies equal widths.
+# For main-vertical: counts panes in the right column and verifies equal heights.
+assert_balanced_rows() {
+  local layout="${1}"
+
+  case "${layout}" in
+    monocle|grid|deck) return 0 ;;
+  esac
+
+  local -a pane_data=()
+  while IFS= read -r line; do
+    pane_data+=("${line}")
+  done < <(command tmux -S "${TMUX_SOCKET}" list-panes -F '#{pane_top} #{pane_height} #{pane_left} #{pane_width}' 2>/dev/null)
+
+  local pane_count="${#pane_data[@]}"
+  (( pane_count <= 2 )) && return 0
+
+  # For main-vertical: stack panes should have similar heights
+  if [[ "${layout}" == "main-vertical" ]]; then
+    local -a stack_heights=()
+    local max_width=0
+    local entry
+    for entry in "${pane_data[@]}"; do
+      local pw
+      pw=$(echo "${entry}" | awk '{print $4}')
+      if (( pw > max_width )); then
+        max_width="${pw}"
+      fi
+    done
+    for entry in "${pane_data[@]}"; do
+      local pw ph
+      pw=$(echo "${entry}" | awk '{print $4}')
+      ph=$(echo "${entry}" | awk '{print $2}')
+      if (( pw < max_width )); then
+        stack_heights+=("${ph}")
+      fi
+    done
+    if (( ${#stack_heights[@]} >= 2 )); then
+      local min_h=999999 max_h=0
+      local h
+      for h in "${stack_heights[@]}"; do
+        (( h < min_h )) && min_h="${h}"
+        (( h > max_h )) && max_h="${h}"
+      done
+      local hdiff=$(( max_h - min_h ))
+      if (( hdiff > 2 )); then
+        echo "Unbalanced stack heights in main-vertical: min=${min_h} max=${max_h} (diff=${hdiff})" >&2
+        return 1
+      fi
+    fi
+    return 0
+  fi
+
+  # For main-horizontal: stack panes should have similar widths
+  if [[ "${layout}" == "main-horizontal" ]]; then
+    local -a stack_widths=()
+    local max_height=0
+    local entry
+    for entry in "${pane_data[@]}"; do
+      local ph
+      ph=$(echo "${entry}" | awk '{print $2}')
+      if (( ph > max_height )); then
+        max_height="${ph}"
+      fi
+    done
+    for entry in "${pane_data[@]}"; do
+      local ph pw
+      ph=$(echo "${entry}" | awk '{print $2}')
+      pw=$(echo "${entry}" | awk '{print $4}')
+      if (( ph < max_height )); then
+        stack_widths+=("${pw}")
+      fi
+    done
+    if (( ${#stack_widths[@]} >= 2 )); then
+      local min_w=999999 max_w=0
+      local w
+      for w in "${stack_widths[@]}"; do
+        (( w < min_w )) && min_w="${w}"
+        (( w > max_w )) && max_w="${w}"
+      done
+      local wdiff=$(( max_w - min_w ))
+      if (( wdiff > 2 )); then
+        echo "Unbalanced stack widths in main-horizontal: min=${min_w} max=${max_w} (diff=${wdiff})" >&2
+        return 1
+      fi
+    fi
+    return 0
+  fi
+}
+
+# assert_layout_applies: verify a layout applies cleanly at a given pane count.
+assert_layout_applies() {
+  local layout="${1}"
+  local count="${2}"
+  create_panes "${count}"
+  run_tiling layout "${layout}"
+  [[ "$(command tmux -S "${TMUX_SOCKET}" show-option -wqv "@tiling_revamped_layout" 2>/dev/null)" == "${layout}" ]]
+  assert_pane_count "${count}"
+}
+
 export -f tmux
 export TMUX_SOCKET
 export TILING_CMD

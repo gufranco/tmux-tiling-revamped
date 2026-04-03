@@ -13,6 +13,33 @@
 PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TILING_CMD="${PLUGIN_DIR}/src/tiling.sh"
 
+# Minimum bash version: 4.0 (required for associative arrays, ${var^^}, etc.)
+_check_bash_version() {
+  if (( BASH_VERSINFO[0] < 4 )); then
+    tmux display-message "tmux-tiling-revamped: bash 4.0+ required (found ${BASH_VERSION})" 2>/dev/null
+    return 1
+  fi
+  return 0
+}
+
+# Minimum tmux version: 3.2 (required for display-popup, hooks with priority)
+_check_tmux_version() {
+  local tmux_version
+  tmux_version=$(tmux -V 2>/dev/null | sed 's/[^0-9.]//g')
+  [[ -z "${tmux_version}" ]] && return 0
+
+  local major="${tmux_version%%.*}"
+  local minor="${tmux_version#*.}"
+  minor="${minor%%[a-z]*}"
+  minor="${minor%%.*}"
+
+  if (( major < 3 )) || { (( major == 3 )) && (( minor < 2 )); }; then
+    tmux display-message "tmux-tiling-revamped: tmux 3.2+ required (found ${tmux_version})" 2>/dev/null
+    return 1
+  fi
+  return 0
+}
+
 _get_option() {
   local value
   value="$(tmux show-option -gqv "${1}" 2>/dev/null)"
@@ -93,6 +120,14 @@ _setup_keybindings() {
 }
 
 _setup_hooks() {
+  # Clear previous tiling hooks to prevent accumulation on config reload
+  tmux set-hook -gu "after-split-window[100]" 2>/dev/null || true
+  tmux set-hook -gu "after-kill-pane[100]" 2>/dev/null || true
+  tmux set-hook -gu "pane-exited[100]" 2>/dev/null || true
+  tmux set-hook -gu "window-resized[100]" 2>/dev/null || true
+  tmux set-hook -gu "after-new-window[100]" 2>/dev/null || true
+  tmux set-hook -gu "pane-focus-in[100]" 2>/dev/null || true
+
   local auto_apply
   auto_apply=$(_get_option "@tiling_revamped_auto_apply" "1")
 
@@ -155,6 +190,9 @@ _setup_pick_layout_binding() {
 }
 
 chmod +x "${TILING_CMD}" 2>/dev/null || true
+
+_check_bash_version || return 0
+_check_tmux_version || return 0
 
 _setup_keybindings
 _setup_hooks

@@ -169,22 +169,22 @@ BSP cascade toward a corner. Each new pane takes half of the remaining space. Th
 
 ### Spiral
 
-Same BSP algorithm as dwindle, but the split direction rotates every few panes, creating a spiral convergence pattern instead of a straight cascade toward a corner.
+Same BSP algorithm as dwindle, but the spiral trajectory reverses pane ordering at each depth. The frame is identical to dwindle, only the pane numbers differ.
 
-**5 panes**
+**4 panes**
 
 ```
 ┌───────────────────┬───────────────────┐
-│                   │         2         │
 │                   │                   │
-│         1         ├───────────────────┤
-│                   │         3         │
+│                   │         2         │
+│         1         │                   │
 │                   ├─────────┬─────────┤
-│                   │    5    │    4    │
+│                   │         │         │
+│                   │    4    │    3    │
 └───────────────────┴─────────┴─────────┘
 ```
 
-Note how pane 5 appears to the left of pane 4. In the dwindle layout, pane 4 would be on top with 5 below. The spiral trajectory reverses the direction at that depth, creating the inward rotation.
+Compare with dwindle: panes 3 and 4 are swapped. In dwindle, the cascade goes 3 left, 4 right. In spiral, it reverses: 4 left, 3 right.
 
 ### Grid
 

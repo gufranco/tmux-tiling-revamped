@@ -60,6 +60,7 @@ source "${PLUGIN_DIR}/src/lib/operations/focus-resize.sh"
 source "${PLUGIN_DIR}/src/lib/operations/resize-master.sh"
 source "${PLUGIN_DIR}/src/lib/operations/sync.sh"
 source "${PLUGIN_DIR}/src/lib/operations/swap-direction.sh"
+source "${PLUGIN_DIR}/src/lib/operations/pick-layout.sh"
 source "${PLUGIN_DIR}/src/lib/features/marks.sh"
 source "${PLUGIN_DIR}/src/lib/features/scratchpad.sh"
 source "${PLUGIN_DIR}/src/lib/features/presets.sh"
@@ -154,6 +155,7 @@ main() {
     sync)       sync_panes ;;
     swap)       swap_pane_direction "${1:-R}" ;;
     cycle)      cycle_layout "${1:-next}" ;;
+    pick)       pick_layout ;;
     mark)       mark_pane "${1:-}" ;;
     unmark)     unmark_pane "${1:-}" ;;
     jump)       jump_to_mark "${1:-}" ;;

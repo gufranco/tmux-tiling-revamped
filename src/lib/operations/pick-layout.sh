@@ -84,7 +84,7 @@ _pick_with_fzf_tmux() {
     --tmux "center,${width},${height}"
     --prompt="Select layout: "
     --exit-0
-    --preview="_get_layout_preview {}"
+    --preview="bash -c 'n=TILING_PREVIEW_\${1^^}; n=\${n//-/_}; echo \"\${!n:-No preview available}\"' -- {}"
     --preview-window="right:${preview_width}"
   )
 

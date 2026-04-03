@@ -771,6 +771,11 @@ All options use the `@tiling_revamped_` prefix.
 | `@tiling_revamped_navigator` | `0` | Vim-aware navigation. Set to `1` to enable `M-h/j/k/l` with vim detection |
 | `@tiling_revamped_scratch_width` | `80%` | Scratchpad popup width |
 | `@tiling_revamped_scratch_height` | `75%` | Scratchpad popup height |
+| `@tiling_revamped_key_pick_layout` | `p` | Key for layout picker (prefix mode) |
+| `@tiling_revamped_key_pick_layout_alt` | (empty) | Key for layout picker with vim-aware Alt binding |
+| `@tiling_revamped_pick_width` | `60%` | Layout picker popup width |
+| `@tiling_revamped_pick_height` | `40%` | Layout picker popup height |
+| `@tiling_revamped_pick_preview_width` | `60%` | Layout picker preview panel width (ASCII diagrams) |
 | `@tiling_revamped_enable_logging` | `0` | Write debug logs to `~/.tmux/tiling-logs/` |
 
 ### Custom Keybindings
@@ -863,6 +868,49 @@ set -g @tiling_revamped_key_scratchpad      "g"
 ```
 
 Set any key to `""` (empty string) to disable that binding entirely.
+
+### Layout Picker
+
+Interactive fzf-based layout picker with ASCII diagram previews. **Enabled by default** with key `p`.
+
+**Default binding:**
+```tmux
+# prefix + p (or Alt+p if @tiling_revamped_alt_keys is enabled)
+```
+
+**To change the key:**
+```tmux
+set -g @tiling_revamped_key_pick_layout "P"  # Use a different key
+```
+
+**Vim-aware Alt binding (Recommended for vim users):**
+```tmux
+set -g @tiling_revamped_key_pick_layout_alt "p"  # Alt+p
+```
+- Opens picker in regular tmux panes
+- Passes Alt+p to vim/nvim/fzf automatically
+- No special vim configuration needed
+
+**Popup dimensions** (optional, defaults work well):
+```tmux
+set -g @tiling_revamped_pick_width "60%"   # default
+set -g @tiling_revamped_pick_height "40%"  # default
+```
+
+**Explicit vim integration** (optional):
+If you want to trigger the picker from within vim (rather than passing through), add to `init.lua`:
+```lua
+vim.keymap.set('n', '<M-p>', function()
+  vim.fn.system('tmux run-shell "~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh pick"')
+end, { silent = true })
+```
+
+**Preview Window:**
+The picker shows ASCII diagrams in a preview panel on the right side. Each layout displays a representative 4-pane configuration.
+
+**Requirements:**
+- fzf >= 0.44.0 (for `--tmux` popup and `--preview` support)
+- Preview files located in `src/lib/operations/layout-previews/`
 
 ### macOS: Option Key as Meta
 

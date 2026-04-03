@@ -56,3 +56,15 @@ readonly OPT_KEY_SWAP_UP="@tiling_revamped_key_swap_up"
 readonly OPT_KEY_SWAP_DOWN="@tiling_revamped_key_swap_down"
 readonly OPT_KEY_SWAP_LEFT="@tiling_revamped_key_swap_left"
 readonly OPT_KEY_SWAP_RIGHT="@tiling_revamped_key_swap_right"
+
+# Layout picker options
+readonly OPT_KEY_PICK_LAYOUT="@tiling_revamped_key_pick_layout"
+readonly OPT_KEY_PICK_LAYOUT_ALT="@tiling_revamped_key_pick_layout_alt"
+readonly OPT_PICK_WIDTH="@tiling_revamped_pick_width"
+readonly OPT_PICK_HEIGHT="@tiling_revamped_pick_height"
+readonly OPT_PICK_PREVIEW_WIDTH="@tiling_revamped_pick_preview_width"
+
+# Layout picker defaults
+readonly TILING_DEFAULT_PICK_WIDTH="60%"
+readonly TILING_DEFAULT_PICK_HEIGHT="40%"
+readonly TILING_DEFAULT_PICK_PREVIEW_WIDTH="60%"

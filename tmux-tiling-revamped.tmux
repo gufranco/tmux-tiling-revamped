@@ -58,6 +58,7 @@ _setup_keybindings() {
   local key_swap_down;      key_swap_down=$(     _get_option "@tiling_revamped_key_swap_down"       "")
   local key_swap_left;      key_swap_left=$(     _get_option "@tiling_revamped_key_swap_left"       "")
   local key_swap_right;     key_swap_right=$(    _get_option "@tiling_revamped_key_swap_right"      "")
+  local key_pick_layout;    key_pick_layout=$(   _get_option "@tiling_revamped_key_pick_layout"    "p")
 
   _bind "${alt_keys}" "${key_dwindle}"        "${TILING_CMD} layout dwindle"
   _bind "${alt_keys}" "${key_spiral}"         "${TILING_CMD} layout spiral"
@@ -86,6 +87,9 @@ _setup_keybindings() {
   [[ -n "${key_swap_down}" ]]  && _bind "${alt_keys}" "${key_swap_down}"  "${TILING_CMD} swap D"
   [[ -n "${key_swap_left}" ]]  && _bind "${alt_keys}" "${key_swap_left}"  "${TILING_CMD} swap L"
   [[ -n "${key_swap_right}" ]] && _bind "${alt_keys}" "${key_swap_right}" "${TILING_CMD} swap R"
+
+  # Layout picker binding
+  _bind "${alt_keys}" "${key_pick_layout}" "${TILING_CMD} pick"
 }
 
 _setup_hooks() {
@@ -134,8 +138,25 @@ _setup_navigation() {
   tmux bind-key -n M-l if-shell "${is_vim}" "send-keys M-l" "select-pane -R"
 }
 
+_setup_pick_layout_binding() {
+  local key_pick_layout_alt
+  key_pick_layout_alt=$(_get_option "@tiling_revamped_key_pick_layout_alt" "")
+
+  [[ -z "${key_pick_layout_alt}" ]] && return 0
+
+  # Vim detection pattern (same as navigator)
+  local is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
+
+  # Generate vim-aware Alt binding
+  tmux bind-key -n "M-${key_pick_layout_alt}" \
+    if-shell "${is_vim}" \
+    "send-keys M-${key_pick_layout_alt}" \
+    "run-shell '${TILING_CMD} pick'"
+}
+
 chmod +x "${TILING_CMD}" 2>/dev/null || true
 
 _setup_keybindings
 _setup_hooks
 _setup_navigation
+_setup_pick_layout_binding

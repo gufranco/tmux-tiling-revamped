@@ -90,7 +90,6 @@ _pick_with_fzf_tmux() {
 
   [[ -n "${current}" ]] && fzf_args+=(
     --header="Current: ${current}"
-    --query="${current}"
   )
 
   local selected

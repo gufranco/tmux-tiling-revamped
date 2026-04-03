@@ -71,13 +71,15 @@ apply_preset() {
     && set_window_option "@tiling_revamped_orientation" "${flags}"
 
   case "${layout}" in
-    dwindle)     _apply_bsp_layout "false" "${flags}" ; set_current_layout "dwindle" ;;
-    spiral)      _apply_bsp_layout "true"  "${flags}" ; set_current_layout "spiral" ;;
-    grid)        apply_layout_grid ;;
-    main-center) apply_layout_main_center ;;
-    monocle)     apply_layout_monocle ;;
-    deck)        apply_layout_deck ;;
-    *)           log_error "presets" "Unknown layout in preset: ${layout}" ; return 1 ;;
+    dwindle)         apply_layout_dwindle "" ;;
+    spiral)          apply_layout_spiral "" ;;
+    grid)            apply_layout_grid ;;
+    main-vertical)   apply_layout_main_vertical ;;
+    main-horizontal) apply_layout_main_horizontal ;;
+    main-center)     apply_layout_main_center ;;
+    monocle)         apply_layout_monocle ;;
+    deck)            apply_layout_deck ;;
+    *)               log_error "presets" "Unknown layout in preset: ${layout}" ; return 1 ;;
   esac
 }
 

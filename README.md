@@ -709,7 +709,7 @@ Save the current layout, orientation, and master ratio as a named preset. Restor
 | tmux | 3.2+ | [github.com/tmux/tmux](https://github.com/tmux/tmux) |
 | bash | 4.0+ | Ships with Linux. macOS: `brew install bash` |
 | TPM | latest | [github.com/tmux-plugins/tpm](https://github.com/tmux-plugins/tpm) |
-| fzf | any | Optional. Enables fuzzy mark/preset selection |
+| fzf | 0.44.0+ | Optional. Enables layout picker, fuzzy mark/preset selection |
 
 ### Install
 
@@ -749,6 +749,7 @@ All keybindings use the tmux prefix. Every key is configurable via `@tiling_reva
 | `M` | Mark pane with a name | `mark <name>` |
 | `j` | Jump to marked pane | `jump` |
 | `g` | Toggle scratchpad popup | `scratchpad` |
+| `p` | Open layout picker | `pick` |
 
 ## Configuration
 
@@ -799,6 +800,7 @@ set -g @tiling_revamped_key_sync            "S"
 set -g @tiling_revamped_key_mark            "M"
 set -g @tiling_revamped_key_jump            "j"
 set -g @tiling_revamped_key_scratchpad      "g"
+set -g @tiling_revamped_key_pick_layout    "p"
 
 # Directional swap (disabled by default, set keys to enable)
 set -g @tiling_revamped_key_swap_up    ""
@@ -843,6 +845,7 @@ Several default keys conflict with common tmux bindings. The table below lists e
 | `.` (rotate) | `prefix + .` moves pane to another window | `R` |
 | `,` (flip) | `prefix + ,` renames window | `F` |
 | `C-r` (circulate) | `prefix + C-r` is not commonly bound | `C-n` |
+| `p` (pick layout) | `prefix + p` is previous-window | `P` |
 
 A full conflict-free configuration for users who have vim-style navigation, split keybindings, and buffer management:
 
@@ -865,6 +868,7 @@ set -g @tiling_revamped_key_sync            ""
 set -g @tiling_revamped_key_mark            "N"
 set -g @tiling_revamped_key_jump            "G"
 set -g @tiling_revamped_key_scratchpad      "g"
+set -g @tiling_revamped_key_pick_layout     "P"
 ```
 
 Set any key to `""` (empty string) to disable that binding entirely.
@@ -908,11 +912,10 @@ end, { silent = true })
 ```
 
 **Preview Window:**
-The picker shows ASCII diagrams in a preview panel on the right side. Each layout displays a representative 4-pane configuration.
+The picker shows ASCII diagrams in a preview panel on the right side. Each layout displays a representative 4-pane configuration. The current layout is highlighted in the header and pre-selected.
 
 **Requirements:**
 - fzf >= 0.44.0 (for `--tmux` popup and `--preview` support)
-- Preview files located in `src/lib/operations/layout-previews/`
 
 ### macOS: Option Key as Meta
 

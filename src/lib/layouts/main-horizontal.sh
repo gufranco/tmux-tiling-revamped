@@ -34,4 +34,15 @@ apply_layout_main_horizontal() {
   set_current_layout "main-horizontal"
 }
 
+readonly TILING_PREVIEW_MAIN_HORIZONTAL='Main-Horizontal (4 panes)
+┌───────────────────────────────────────┐
+│                                       │
+│                  1                    │
+│                                       │
+├───────────┬───────────┬───────────────┤
+│     2     │     3     │       4       │
+└───────────┴───────────┴───────────────┘
+Master top, stack bottom'
+export TILING_PREVIEW_MAIN_HORIZONTAL
+
 export -f apply_layout_main_horizontal

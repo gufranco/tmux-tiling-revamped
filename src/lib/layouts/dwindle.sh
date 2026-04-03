@@ -282,6 +282,18 @@ apply_layout_dwindle() {
   set_window_option "@tiling_revamped_orientation" "${stored_flags}"
 }
 
+readonly TILING_PREVIEW_DWINDLE='Dwindle Layout (4 panes)
+┌───────────────────┬───────────────────┐
+│                   │                   │
+│                   │         2         │
+│         1         │                   │
+│                   ├─────────┬─────────┤
+│                   │         │         │
+│                   │    3    │    4    │
+└───────────────────┴─────────┴─────────┘
+BSP cascade toward corner'
+export TILING_PREVIEW_DWINDLE
+
 export -f _layout_checksum
 export -f _bsp_pane_first
 export -f _bsp_leaf_permutation

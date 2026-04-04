@@ -187,7 +187,7 @@ teardown() {
   run _get_layout_preview "deck"
   [[ "${status}" -eq 0 ]]
   [[ "${output}" == *"Deck Layout"* ]]
-  [[ "${output}" == *"Full-height cards side by side"* ]]
+  [[ "${output}" == *"Full-height equal-width cards"* ]]
 }
 
 @test "pick-layout.sh - _get_layout_preview returns fallback for unknown layout" {

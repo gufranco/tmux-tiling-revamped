@@ -1,0 +1,29 @@
+name: Question
+description: Ask a usage question
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before asking, please check:
+        - [README](https://github.com/gufranco/tmux-tiling-revamped#readme)
+        - [Existing issues](https://github.com/gufranco/tmux-tiling-revamped/issues?q=is%3Aissue)
+        - Run `tiling.sh help` for a command reference
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: tmux version, OS, terminal emulator

@@ -1,0 +1,222 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install shellcheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+
+      - name: Run shellcheck
+        run: make lint
+
+      - name: Shellcheck SARIF
+        if: always()
+        run: |
+          find . -type f \( -name "*.sh" -o -name "*.tmux" -o -name "*.bash" \) \
+            -not -path "./.git/*" -not -path "./specs/*" | sort | \
+            xargs shellcheck --severity=warning --format=json > shellcheck.json 2>/dev/null || true
+
+      - name: Validate workflow syntax
+        run: |
+          if command -v actionlint &>/dev/null; then
+            actionlint
+          else
+            echo "actionlint not installed, skipping"
+          fi
+
+      - name: Check shebang lines
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            head -1 "$f" | grep -q '^#!/usr/bin/env bash' || { echo "FAIL: $f missing shebang"; fail=1; }
+          done < <(find src -name "*.sh" | sort)
+          exit $fail
+
+      - name: Check source guard completeness
+        run: |
+          src_guards=$(grep -r "^_TILING_REVAMPED_.*_LOADED=1" src/lib/ | sed 's/.*\(_TILING[^=]*\).*/\1/' | sort -u)
+          helper_unsets=$(grep "unset _TILING" test/helpers.bash | sed 's/.*unset //' | sort -u)
+          missing=$(comm -23 <(echo "$src_guards") <(echo "$helper_unsets"))
+          if [[ -n "$missing" ]]; then
+            echo "Source guards missing from test/helpers.bash:"
+            echo "$missing"
+            exit 1
+          fi
+
+      - name: Check constants exhaustiveness
+        run: |
+          fail=0
+          while IFS= read -r opt; do
+            if ! grep -q "$opt" src/lib/utils/constants.sh; then
+              echo "WARN: $opt used in source but not in constants.sh"
+            fi
+          done < <(grep -roh '@tiling_revamped_[a-z_]*' src/lib/ | sort -u)
+
+      - name: Check ASCII art width consistency
+        run: |
+          fail=0
+          for f in src/lib/layouts/*.sh; do
+            widths=$(grep -E '^[┌├└│┬┴┼─┤┐┘]' "$f" 2>/dev/null | awk '{print length}' | sort -u)
+            count=$(echo "$widths" | wc -l | tr -d ' ')
+            if (( count > 1 )); then
+              echo "FAIL: inconsistent line widths in $f: $widths"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Check file sizes
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            lines=$(wc -l < "$f")
+            if (( lines > 300 )); then
+              echo "FAIL: $f has $lines lines (max 300)"
+              fail=1
+            fi
+          done < <(find src/lib -name "*.sh" | sort)
+          exit $fail
+
+      - name: Check README-to-code sync
+        run: |
+          fail=0
+          for cmd in balance equalize rotate flip promote circulate autosplit focus-resize resize-master sync swap cycle pick undo workspace move-to-workspace project swap-pick validate info doctor restore-layouts help; do
+            if ! grep -q "\"${cmd}\"" README.md 2>/dev/null && ! grep -q "\`${cmd}\`" README.md 2>/dev/null; then
+              echo "WARN: command '$cmd' not found in README"
+            fi
+          done
+
+      - name: Check help text sync
+        run: |
+          fail=0
+          while IFS= read -r cmd; do
+            if ! grep -q "$cmd" src/tiling.sh; then
+              true  # dispatcher commands use different format
+            fi
+          done < <(sed -n '/^  layout /,/^HELP$/p' src/tiling.sh | grep -oE '^\s+\S+' | tr -d ' ' | sort -u)
+
+      - name: Check version consistency
+        run: |
+          src_ver=$(grep 'TILING_REVAMPED_VERSION=' src/lib/utils/constants.sh | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          cl_ver=$(grep -m1 '^\## \[' CHANGELOG.md | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          readme_ver=$(grep -oE 'version-[0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | sed 's/version-//')
+          if [[ "$src_ver" != "$cl_ver" ]]; then
+            echo "FAIL: constants.sh ($src_ver) != CHANGELOG.md ($cl_ver)"
+            exit 1
+          fi
+          if [[ -n "$readme_ver" ]] && [[ "$src_ver" != "$readme_ver" ]]; then
+            echo "FAIL: constants.sh ($src_ver) != README badge ($readme_ver)"
+            exit 1
+          fi
+
+  test:
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats tmux
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install bats-core tmux
+
+      - name: Run tests
+        run: make test
+
+      - name: Check for tmux server leaks
+        if: always()
+        run: |
+          leaked=$(ls /tmp/tiling-test-* 2>/dev/null | wc -l | tr -d ' ')
+          if (( leaked > 0 )); then
+            echo "WARN: $leaked leaked tmux test sockets found"
+            rm -f /tmp/tiling-test-*
+          fi
+
+  release:
+    needs: [lint, test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version bump
+        id: version
+        run: |
+          # Get the latest tag
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=${latest_tag}" >> "$GITHUB_OUTPUT"
+
+          # Get current version from source
+          current_ver=$(grep 'TILING_REVAMPED_VERSION=' src/lib/utils/constants.sh | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "current_ver=${current_ver}" >> "$GITHUB_OUTPUT"
+
+          # Check if this version already has a tag
+          if git tag -l "v${current_ver}" | grep -q .; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Version v${current_ver} already tagged, skipping release"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "New version v${current_ver} detected, will create release"
+          fi
+
+      - name: Extract changelog for this version
+        if: steps.version.outputs.skip == 'false'
+        id: changelog
+        run: |
+          ver="${{ steps.version.outputs.current_ver }}"
+          # Extract the section for this version from CHANGELOG.md
+          notes=$(awk "/^## \[${ver}\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
+          # Write to file for gh release
+          echo "$notes" > /tmp/release-notes.md
+          echo "has_notes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        if: steps.version.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ver="${{ steps.version.outputs.current_ver }}"
+          git tag -a "v${ver}" -m "v${ver}"
+          git push origin "v${ver}"
+
+          # Create tarball excluding dev files
+          tar czf "tmux-tiling-revamped-${ver}.tar.gz" \
+            --exclude='.git' --exclude='test' --exclude='specs' \
+            --exclude='.github' --exclude='.editorconfig' \
+            --exclude='.shellcheckrc' --exclude='Makefile' \
+            --exclude='CONTRIBUTING.md' .
+
+          gh release create "v${ver}" \
+            --title "v${ver}" \
+            --notes-file /tmp/release-notes.md \
+            "tmux-tiling-revamped-${ver}.tar.gz"

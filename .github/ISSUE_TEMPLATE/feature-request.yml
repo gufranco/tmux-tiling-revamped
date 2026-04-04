@@ -1,0 +1,48 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve? What workflow is limited today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should this work? Include keybindings, options, or behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about and why they are less ideal.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area affected
+      options:
+        - Layout (new or existing)
+        - Operation
+        - Feature (marks, scratchpad, presets, etc.)
+        - Keybindings
+        - Configuration
+        - Documentation
+        - CI/CD
+        - Other
+
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Willing to submit a PR?
+      options:
+        - "Yes"
+        - "Yes, with guidance"
+        - "No"

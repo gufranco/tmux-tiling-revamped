@@ -1,0 +1,59 @@
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9 # v5.0.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Label PR by size
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          lines=$(git diff --stat origin/main...HEAD | tail -1 | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
+          pr_number=${{ github.event.pull_request.number }}
+
+          if (( lines < 100 )); then
+            label="size/S"
+          elif (( lines < 400 )); then
+            label="size/M"
+          elif (( lines < 1000 )); then
+            label="size/L"
+          else
+            label="size/XL"
+          fi
+
+          gh pr edit "$pr_number" --add-label "$label" || true
+
+  title-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title format
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if echo "$TITLE" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .{1,50}$'; then
+            echo "PR title follows conventional commit format"
+          else
+            echo "WARN: PR title does not follow conventional commit format"
+            echo "Expected: type(scope): description (max 50 chars)"
+            echo "Got: $TITLE"
+          fi

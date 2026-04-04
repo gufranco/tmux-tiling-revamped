@@ -1,0 +1,8 @@
+# Default owner for everything
+* @gufranco
+
+# Critical paths require explicit review
+tmux-tiling-revamped.tmux @gufranco
+src/lib/layouts/dwindle.sh @gufranco
+src/tiling.sh @gufranco
+.github/workflows/ @gufranco

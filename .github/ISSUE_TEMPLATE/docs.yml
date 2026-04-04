@@ -1,0 +1,28 @@
+name: Documentation Issue
+description: Report an error or gap in documentation
+labels: ["documentation"]
+body:
+  - type: input
+    id: section
+    attributes:
+      label: Section affected
+      description: Which part of the README, CHANGELOG, or CONTRIBUTING is wrong?
+      placeholder: "README > Configuration > Behavior table"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current text
+      description: What does the documentation currently say?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested correction
+      description: What should it say instead?
+    validations:
+      required: true

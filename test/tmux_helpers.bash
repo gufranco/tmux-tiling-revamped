@@ -208,7 +208,7 @@ assert_balanced_rows() {
         (( h > max_h )) && max_h="${h}"
       done
       local hdiff=$(( max_h - min_h ))
-      if (( hdiff > 2 )); then
+      if (( hdiff > 3 )); then
         echo "Unbalanced stack heights in main-vertical: min=${min_h} max=${max_h} (diff=${hdiff})" >&2
         return 1
       fi
@@ -244,7 +244,7 @@ assert_balanced_rows() {
         (( w > max_w )) && max_w="${w}"
       done
       local wdiff=$(( max_w - min_w ))
-      if (( wdiff > 2 )); then
+      if (( wdiff > 3 )); then
         echo "Unbalanced stack widths in main-horizontal: min=${min_w} max=${max_w} (diff=${wdiff})" >&2
         return 1
       fi

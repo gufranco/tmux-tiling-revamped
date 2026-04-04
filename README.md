@@ -411,10 +411,17 @@ Requirements: fzf >= 0.44.0.
 ### Layout Cycling
 
 ```
-       prefix+o    prefix+o    prefix+o       prefix+o          prefix+o          prefix+o      prefix+o
-dwindle --> spiral --> grid --> main-vertical --> main-horizontal --> main-center --> monocle --> deck --+
-   ^                                                                                                   |
-   +---------------------------------------------------------------------------------------------------+
+dwindle --> spiral --> grid
+  ^                     |
+  |    main-vertical <--+
+  |         |
+  |    main-horizontal
+  |         |
+  |    main-center
+  |         |
+  |    monocle
+  |         |
+  +--- deck +
 ```
 
 ### BSP Orientation Flags

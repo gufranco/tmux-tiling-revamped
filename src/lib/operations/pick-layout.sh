@@ -60,8 +60,9 @@ _get_layout_list() {
 # Reads from TILING_PREVIEW_* exported variables in each layout module.
 _get_layout_preview() {
   local layout="${1:-}"
-  local varname="TILING_PREVIEW_${layout^^}"
-  varname="${varname//-/_}"
+  local upper
+  upper=$(printf '%s' "${layout}" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
+  local varname="TILING_PREVIEW_${upper}"
   echo "${!varname:-No preview available}"
 }
 
@@ -84,7 +85,7 @@ _pick_with_fzf_tmux() {
     --tmux "center,${width},${height}"
     --prompt="Select layout: "
     --exit-0
-    --preview="bash -c 'n=TILING_PREVIEW_\${1^^}; n=\${n//-/_}; echo \"\${!n:-No preview available}\"' -- {}"
+    --preview="bash -c 'u=\$(printf \"%s\" \"\$1\" | tr \"[:lower:]\" \"[:upper:]\" | tr \"-\" \"_\"); n=\"TILING_PREVIEW_\${u}\"; echo \"\${!n:-No preview available}\"' -- {}"
     --preview-window="right:${preview_width}"
   )
 

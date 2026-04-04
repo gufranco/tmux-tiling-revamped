@@ -258,6 +258,12 @@ assert_layout_applies() {
   local layout="${1}"
   local count="${2}"
   create_panes "${count}"
+  local actual_count
+  actual_count=$(get_pane_count)
+  # Skip if terminal was too small to create all panes
+  if (( actual_count < count )); then
+    skip "terminal too small for ${count} panes (created ${actual_count})"
+  fi
   run_tiling layout "${layout}"
   [[ "$(command tmux -S "${TMUX_SOCKET}" show-option -wqv "@tiling_revamped_layout" 2>/dev/null)" == "${layout}" ]]
   assert_pane_count "${count}"

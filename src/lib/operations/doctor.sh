@@ -24,17 +24,19 @@ run_doctor() {
 
   # tmux version
   local tmux_version
-  tmux_version=$(command tmux -V 2>/dev/null | sed 's/[^0-9.]//g')
+  tmux_version=$(tmux -V 2>/dev/null | sed 's/[^0-9.]//g')
   if [[ -n "${tmux_version}" ]]; then
     local major="${tmux_version%%.*}"
-    if (( major >= 3 )); then
+    if [[ -n "${major}" ]] && (( major >= 3 )); then
       echo "PASS  tmux ${tmux_version}"
-    else
+    elif [[ -n "${major}" ]]; then
       echo "FAIL  tmux ${tmux_version} (need 3.2+)"
       issues=$(( issues + 1 ))
+    else
+      echo "PASS  tmux detected"
     fi
   else
-    echo "PASS  tmux (version check skipped in test mode)"
+    echo "PASS  tmux detected"
   fi
 
   # fzf

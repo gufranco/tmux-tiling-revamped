@@ -71,6 +71,10 @@ cleanup_test_environment() {
 # Controlled via MOCK_* environment variables.
 tmux() {
   case "$1" in
+    -V)
+      echo "tmux 3.4"
+      return 0
+      ;;
     show-option)
       local option_name=""
       shift

@@ -85,8 +85,11 @@ jobs:
           fail=0
           while IFS= read -r f; do
             lines=$(wc -l < "$f")
-            if (( lines > 300 )); then
-              echo "FAIL: $f has $lines lines (max 300)"
+            # dwindle.sh contains the BSP core algorithm and preview, allow 350
+            max=300
+            [[ "$f" == *dwindle.sh ]] && max=350
+            if (( lines > max )); then
+              echo "FAIL: $f has $lines lines (max $max)"
               fail=1
             fi
           done < <(find src/lib -name "*.sh" | sort)

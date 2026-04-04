@@ -24,14 +24,14 @@ apply_layout_deck() {
 }
 
 TILING_PREVIEW_DECK='Deck Layout (4 panes)
-┌───────────┬───────────┬───────────┬───┐
-│           │           │           │   │
-│           │           │           │   │
-│     1     │     2     │     3     │ 4 │
-│           │           │           │   │
-│           │           │           │   │
-└───────────┴───────────┴───────────┴───┘
-Full-height cards side by side'
+┌─────────┬─────────┬─────────┬─────────┐
+│         │         │         │         │
+│         │         │         │         │
+│    1    │    2    │    3    │    4    │
+│         │         │         │         │
+│         │         │         │         │
+└─────────┴─────────┴─────────┴─────────┘
+Full-height equal-width cards'
 export TILING_PREVIEW_DECK
 
 export -f apply_layout_deck

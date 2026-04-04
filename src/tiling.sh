@@ -31,6 +31,12 @@
 #   tiling.sh workspace <number>
 #   tiling.sh move-to-workspace <number>
 #   tiling.sh project
+#   tiling.sh swap-pick
+#   tiling.sh validate [fix]
+#   tiling.sh info
+#   tiling.sh doctor
+#   tiling.sh restore-layouts
+#   tiling.sh help
 #   tiling.sh mark    <name>
 #   tiling.sh unmark  [name]
 #   tiling.sh jump    [name]
@@ -73,6 +79,12 @@ source "${PLUGIN_DIR}/src/lib/features/presets.sh"
 source "${PLUGIN_DIR}/src/lib/features/cycle.sh"
 source "${PLUGIN_DIR}/src/lib/features/workspaces.sh"
 source "${PLUGIN_DIR}/src/lib/features/project-launcher.sh"
+source "${PLUGIN_DIR}/src/lib/features/resurrect.sh"
+source "${PLUGIN_DIR}/src/lib/operations/validate.sh"
+source "${PLUGIN_DIR}/src/lib/operations/swap-pick.sh"
+source "${PLUGIN_DIR}/src/lib/operations/info.sh"
+source "${PLUGIN_DIR}/src/lib/operations/doctor.sh"
+source "${PLUGIN_DIR}/src/lib/utils/pane-guard.sh"
 
 _handle_hook() {
   local event="${1:-}"
@@ -165,6 +177,61 @@ main() {
     workspace)  switch_workspace "${1:-1}" ;;
     move-to-workspace) move_to_workspace "${1:-1}" ;;
     project)    launch_project ;;
+    swap-pick)  swap_pick ;;
+    validate)   validate_layout "${1:-check}" ;;
+    info)       show_info ;;
+    doctor)     run_doctor ;;
+    restore-layouts) restore_layouts ;;
+    help)
+      cat <<'HELP'
+tmux-tiling-revamped: BSP tiling window manager for tmux
+
+Layouts:
+  layout dwindle [flags]    BSP cascade toward corner
+  layout spiral [flags]     BSP with spiral trajectory
+  layout grid               Even N x M grid
+  layout main-vertical      Master left, stack right
+  layout main-horizontal    Master top, stack bottom
+  layout main-center        Wide center, balanced sides
+  layout monocle            Zoom toggle
+  layout deck               Full-height cards side by side
+
+Operations:
+  balance          Reset splits to 50%
+  equalize         Even distribution ignoring topology
+  rotate [deg]     Rotate orientation (90/180/270)
+  flip [h|v]       Mirror orientation
+  promote          Swap focused pane with master
+  circulate [dir]  Shift pane positions (next/prev)
+  autosplit        Split along longest axis
+  focus-resize     Expand focused pane to golden ratio
+  resize-master    Grow or shrink master (grow/shrink)
+  sync             Toggle synchronize-panes
+  swap [dir]       Swap with neighbor (U/D/L/R)
+  swap-pick        Swap with fzf-selected pane
+  pick             Layout picker (fzf popup)
+  cycle [dir]      Cycle through layout list (next/prev)
+  undo             Revert to previous layout
+
+Features:
+  mark <name>      Label a pane
+  unmark [name]    Remove a label
+  jump [name]      Jump to labeled pane (fzf if no name)
+  scratchpad       Toggle floating scratchpad
+  preset save <n>  Save current layout as preset
+  preset apply [n] Apply a saved preset (fzf if no name)
+  workspace <N>    Switch to window N (create if missing)
+  move-to-workspace <N>  Move pane to window N
+  project          Open project in new window (fzf)
+
+Diagnostics:
+  info             Show current layout state
+  doctor           Check environment health
+  validate [fix]   Check layout metadata consistency
+  restore-layouts  Re-apply all stored layouts
+  help             This message
+HELP
+      ;;
     mark)       mark_pane "${1:-}" ;;
     unmark)     unmark_pane "${1:-}" ;;
     jump)       jump_to_mark "${1:-}" ;;

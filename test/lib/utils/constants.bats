@@ -13,7 +13,7 @@ teardown() {
 
 @test "constants.sh - TILING_REVAMPED_VERSION is set" {
   [[ -n "${TILING_REVAMPED_VERSION}" ]]
-  [[ "${TILING_REVAMPED_VERSION}" == "1.1.0" ]]
+  [[ "${TILING_REVAMPED_VERSION}" == "2.0.0" ]]
 }
 
 @test "constants.sh - TILING_DEFAULT_ORIENTATION is set" {

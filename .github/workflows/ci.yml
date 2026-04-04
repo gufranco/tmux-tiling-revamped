@@ -219,11 +219,9 @@ jobs:
           git push origin "v${ver}"
 
           # Create tarball excluding dev files
-          tar czf "tmux-tiling-revamped-${ver}.tar.gz" \
-            --exclude='.git' --exclude='test' --exclude='specs' \
-            --exclude='.github' --exclude='.editorconfig' \
-            --exclude='.shellcheckrc' --exclude='Makefile' \
-            --exclude='CONTRIBUTING.md' .
+          mkdir -p /tmp/release-staging
+          cp -r src tmux-tiling-revamped.tmux README.md CHANGELOG.md LICENSE /tmp/release-staging/
+          tar czf "tmux-tiling-revamped-${ver}.tar.gz" -C /tmp/release-staging .
 
           gh release create "v${ver}" \
             --title "v${ver}" \

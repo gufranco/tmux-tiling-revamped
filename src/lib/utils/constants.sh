@@ -71,6 +71,15 @@ readonly OPT_LAYOUT_HISTORY="@tiling_revamped_layout_history"
 # Split ratio
 readonly OPT_SPLIT_RATIO="@tiling_revamped_split_ratio"
 
+# Workspaces
+readonly OPT_WORKSPACES="@tiling_revamped_workspaces"
+readonly OPT_SHIFTNUM="@tiling_revamped_shiftnum"
+
+# Project launcher
+readonly OPT_PROJECT_DIR="@tiling_revamped_project_dir"
+readonly OPT_PROJECT_DEPTH="@tiling_revamped_project_depth"
+readonly OPT_KEY_PROJECT="@tiling_revamped_key_project"
+
 # Layout picker defaults
 readonly TILING_DEFAULT_PICK_WIDTH="60%"
 readonly TILING_DEFAULT_PICK_HEIGHT="40%"

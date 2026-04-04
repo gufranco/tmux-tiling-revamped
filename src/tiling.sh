@@ -28,6 +28,9 @@
 #   tiling.sh cycle   [next|prev]
 #   tiling.sh pick
 #   tiling.sh undo
+#   tiling.sh workspace <number>
+#   tiling.sh move-to-workspace <number>
+#   tiling.sh project
 #   tiling.sh mark    <name>
 #   tiling.sh unmark  [name]
 #   tiling.sh jump    [name]
@@ -68,6 +71,8 @@ source "${PLUGIN_DIR}/src/lib/features/marks.sh"
 source "${PLUGIN_DIR}/src/lib/features/scratchpad.sh"
 source "${PLUGIN_DIR}/src/lib/features/presets.sh"
 source "${PLUGIN_DIR}/src/lib/features/cycle.sh"
+source "${PLUGIN_DIR}/src/lib/features/workspaces.sh"
+source "${PLUGIN_DIR}/src/lib/features/project-launcher.sh"
 
 _handle_hook() {
   local event="${1:-}"
@@ -157,6 +162,9 @@ main() {
     cycle)      cycle_layout "${1:-next}" ;;
     pick)       pick_layout ;;
     undo)       undo_layout ;;
+    workspace)  switch_workspace "${1:-1}" ;;
+    move-to-workspace) move_to_workspace "${1:-1}" ;;
+    project)    launch_project ;;
     mark)       mark_pane "${1:-}" ;;
     unmark)     unmark_pane "${1:-}" ;;
     jump)       jump_to_mark "${1:-}" ;;

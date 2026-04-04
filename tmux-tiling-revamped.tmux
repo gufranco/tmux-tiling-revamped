@@ -177,6 +177,61 @@ _setup_navigation() {
   tmux bind-key -n M-l if-shell "${is_vim}" "send-keys M-l" "select-pane -R"
 }
 
+_setup_workspaces() {
+  local workspaces
+  workspaces=$(_get_option "@tiling_revamped_workspaces" "0")
+  [[ "${workspaces}" != "1" ]] && return 0
+
+  local alt_keys
+  alt_keys=$(_get_option "@tiling_revamped_alt_keys" "0")
+
+  # Shift+number characters for the "move pane to workspace" bindings
+  local shiftnum
+  shiftnum=$(_get_option "@tiling_revamped_shiftnum" '!@#$%^&*()')
+
+  local i key shift_key
+  for (( i = 1; i <= 9; i++ )); do
+    key="${i}"
+    shift_key="${shiftnum:$((i - 1)):1}"
+
+    if [[ "${alt_keys}" == "1" ]]; then
+      # Alt+N switches to workspace N
+      tmux bind-key -n "M-${key}" run-shell "${TILING_CMD} workspace ${i}"
+      # Alt+Shift+N moves pane to workspace N
+      [[ -n "${shift_key}" ]] && \
+        tmux bind-key -n "M-${shift_key}" run-shell "${TILING_CMD} move-to-workspace ${i}"
+    else
+      # Prefix+N is already used by tmux for window selection.
+      # In prefix mode, use Shift+N for workspace switch and
+      # the workspace move is not bound by default.
+      :
+    fi
+  done
+
+  # Window 0 (mapped to key 0)
+  local shift_zero="${shiftnum:9:1}"
+  if [[ "${alt_keys}" == "1" ]]; then
+    tmux bind-key -n "M-0" run-shell "${TILING_CMD} workspace 10"
+    [[ -n "${shift_zero}" ]] && \
+      tmux bind-key -n "M-${shift_zero}" run-shell "${TILING_CMD} move-to-workspace 10"
+  fi
+}
+
+_setup_project_launcher() {
+  local project_dir
+  project_dir=$(_get_option "@tiling_revamped_project_dir" "")
+  [[ -z "${project_dir}" ]] && return 0
+
+  local alt_keys
+  alt_keys=$(_get_option "@tiling_revamped_alt_keys" "0")
+
+  local key_project
+  key_project=$(_get_option "@tiling_revamped_key_project" "")
+  [[ -z "${key_project}" ]] && return 0
+
+  _bind "${alt_keys}" "${key_project}" "${TILING_CMD} project"
+}
+
 _setup_pick_layout_binding() {
   local key_pick_layout_alt
   key_pick_layout_alt=$(_get_option "@tiling_revamped_key_pick_layout_alt" "")
@@ -202,3 +257,5 @@ _setup_keybindings
 _setup_hooks
 _setup_navigation
 _setup_pick_layout_binding
+_setup_workspaces
+_setup_project_launcher

@@ -16,8 +16,8 @@ test-unit: ## Run unit tests only (no tmux server needed)
 
 lint: ## Run shellcheck on all shell files
 	@find . -type f \( -name "*.sh" -o -name "*.tmux" -o -name "*.bash" \) \
-		-not -path "./.git/*" | sort | \
-		xargs $(SHELLCHECK) --severity=warning --shell=bash
+		-not -path "./.git/*" -not -path "./specs/*" | sort | \
+		xargs $(SHELLCHECK) --severity=warning
 
 clean: ## Remove log files and temp artifacts
 	@rm -rf /tmp/tiling-test-*

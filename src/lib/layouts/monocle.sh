@@ -33,7 +33,7 @@ apply_layout_monocle() {
   fi
 }
 
-readonly TILING_PREVIEW_MONOCLE='Monocle Layout
+TILING_PREVIEW_MONOCLE='Monocle Layout
 ┌───────────────────────────────────────┐
 │                                       │
 │                                       │

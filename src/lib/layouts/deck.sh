@@ -23,7 +23,7 @@ apply_layout_deck() {
   set_current_layout "deck"
 }
 
-readonly TILING_PREVIEW_DECK='Deck Layout (4 panes)
+TILING_PREVIEW_DECK='Deck Layout (4 panes)
 ┌───────────┬───────────┬───────────┬───┐
 │           │           │           │   │
 │           │           │           │   │

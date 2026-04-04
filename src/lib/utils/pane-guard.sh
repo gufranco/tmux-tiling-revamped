@@ -9,8 +9,8 @@ LIB_DIR="${SCRIPT_DIR}/.."
 source "${LIB_DIR}/tmux/tmux-config.sh"
 source "${LIB_DIR}/utils/error-logger.sh"
 
-readonly TILING_DEFAULT_MIN_PANE_WIDTH=10
-readonly TILING_DEFAULT_MIN_PANE_HEIGHT=5
+TILING_DEFAULT_MIN_PANE_WIDTH=10
+TILING_DEFAULT_MIN_PANE_HEIGHT=5
 
 # check_pane_size: verify that panes will not shrink below minimum dimensions.
 # Args: pane_count window_width window_height layout

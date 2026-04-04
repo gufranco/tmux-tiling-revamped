@@ -32,7 +32,7 @@ source "${LIB_DIR}/layouts/monocle.sh"
 source "${LIB_DIR}/layouts/deck.sh"
 
 # Logical grouping: BSP layouts first, then standard, main, special layouts
-readonly PICK_LAYOUTS=(
+PICK_LAYOUTS=(
   "dwindle"
   "spiral"
   "grid"

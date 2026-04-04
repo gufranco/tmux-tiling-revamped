@@ -22,7 +22,7 @@ apply_layout_grid() {
   set_current_layout "grid"
 }
 
-readonly TILING_PREVIEW_GRID='Grid Layout (4 panes)
+TILING_PREVIEW_GRID='Grid Layout (4 panes)
 ┌───────────────────┬───────────────────┐
 │                   │                   │
 │         1         │         2         │

@@ -136,7 +136,7 @@ apply_layout_main_center() {
   set_current_layout "main-center"
 }
 
-readonly TILING_PREVIEW_MAIN_CENTER='Main-Center (6 panes)
+TILING_PREVIEW_MAIN_CENTER='Main-Center (6 panes)
 ┌───────┬───────────────────┬───────┐
 │   2   │                   │   4   │
 ├───────┤                   ├───────┤

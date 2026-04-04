@@ -23,7 +23,7 @@ apply_layout_spiral() {
   set_window_option "@tiling_revamped_orientation" "${stored_flags}"
 }
 
-readonly TILING_PREVIEW_SPIRAL='Spiral Layout (4 panes)
+TILING_PREVIEW_SPIRAL='Spiral Layout (4 panes)
 ┌───────────────────┬───────────────────┐
 │                   │                   │
 │                   │         2         │

@@ -292,7 +292,7 @@ apply_layout_dwindle() {
   set_window_option "@tiling_revamped_orientation" "${stored_flags}"
 }
 
-readonly TILING_PREVIEW_DWINDLE='Dwindle Layout (4 panes)
+TILING_PREVIEW_DWINDLE='Dwindle Layout (4 panes)
 ┌───────────────────┬───────────────────┐
 │                   │                   │
 │                   │         2         │

@@ -8,7 +8,7 @@ LIB_DIR="${SCRIPT_DIR}/.."
 
 source "${LIB_DIR}/tmux/tmux-config.sh"
 
-readonly TILING_MAX_UNDO_DEPTH=10
+TILING_MAX_UNDO_DEPTH=10
 
 # push_layout_history: save current layout and orientation before a change.
 # Stores as a pipe-separated stack: "layout:flags|layout:flags|..."

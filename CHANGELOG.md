@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-04-04
+
+### Added
+
+- Layout undo/redo with 10-entry history stack per window (prefix+u)
+- Configurable BSP split ratio via `@tiling_revamped_split_ratio` (20-80)
+- Workspace switching: Alt+1-9 switches windows, Alt+Shift+1-9 moves panes
+- International keyboard support via `@tiling_revamped_shiftnum`
+- Project launcher: fzf popup for opening project directories in new windows
+- Interactive layout picker with ASCII diagram previews (from PR #2 by @shivamashtikar)
+- tmux-resurrect integration: `restore-layouts` re-applies stored layouts
+- Layout validation: `validate` detects and fixes stale layout metadata
+- Health check: `doctor` verifies bash, tmux, fzf, and plugin state
+- Layout info: `info` shows current layout, orientation, and undo depth
+- Pane swap with fzf preview: `swap-pick` lists panes for targeted swapping
+- Pane minimum size guard with configurable thresholds
+- Help command: `tiling.sh help` prints usage reference in terminal
+- 48 balance invariant tests covering all 8 layouts at pane counts 1-10
+- Hook deduplication prevents accumulation on config reload
+- Bash 4.0+ and tmux 3.2+ version gates with fail-fast messages
+- Deprecation framework for future option migrations
+- CONTRIBUTING.md with guidelines for adding layouts and operations
+
+### Changed
+
+- main-center layout distributes panes evenly between left and right columns
+- BSP split ratio applies at depth 0 only, deeper levels remain 50/50
+- Extracted `_reapply_current_layout` shared helper, deduplicated 3 operation files
+- Spiral ASCII art aligned with dwindle frame structure (same geometry, different numbering)
+- ASCII previews moved from .txt files to exported variables in layout modules
+- Deck added to default cycle layout order
+- README diagrams updated to match source preview variables
+
+### Fixed
+
+- BSP orientation normalization in pick-layout, cycle, presets, and new-window hook
+- fzf version check validates 0.44.0 (--tmux requirement) instead of 0.19.0
+- fzf preview uses inline variable expansion (exported functions don't survive tmux popup)
+- Missing main-vertical/main-horizontal in presets apply_preset
+- flip.sh flag replacement uses direct substitution
+- Default key `p` conflict with tmux previous-window documented in conflict table
+
 ## [1.1.0] - 2026-03-25
 
 ### Added

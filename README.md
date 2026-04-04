@@ -388,20 +388,20 @@ Several default keys conflict with common tmux bindings.
 Interactive fzf-based layout picker with ASCII diagram previews.
 
 ```
-+----------------------------------------------------+
-| Select layout:                                      |
-|                      | Dwindle Layout (4 panes)      |
-|   > dwindle          | +----------+----------+       |
-|     spiral           | |          |    2     |       |
-|     grid             | |    1     +-----+----+       |
-|     main-vertical    | |          |  3  | 4  |       |
-|     main-horizontal  | +----------+-----+----+       |
-|     main-center      | BSP cascade toward corner     |
-|     monocle          |                               |
-|     deck             |                               |
-|                      |                               |
-|  Current: dwindle                                    |
-+----------------------------------------------------+
++------------------------------------------------------+
+| Select layout:                                        |
+|                        | Dwindle Layout (4 panes)      |
+|   > dwindle            | +---------+---------+         |
+|     spiral             | |         |    2    |         |
+|     grid               | |    1    +----+----+         |
+|     main-vertical      | |         | 3  | 4  |         |
+|     main-horizontal    | +---------+----+----+         |
+|     main-center        | BSP cascade toward corner     |
+|     monocle            |                               |
+|     deck               |                               |
+|                        |                               |
+|  Current: dwindle                                      |
++------------------------------------------------------+
 ```
 
 The picker shows ASCII diagrams in a preview panel on the right side. Each layout displays a representative configuration. The current layout is shown in the header.

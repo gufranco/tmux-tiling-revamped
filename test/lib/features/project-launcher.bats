@@ -40,9 +40,8 @@ teardown() {
 @test "project-launcher.sh - launch_project succeeds with valid directory" {
   export MOCK_TILING_PROJECT_DIR="${TEST_TMPDIR}"
   mkdir -p "${TEST_TMPDIR}/project-a"
-  # fzf will exit with no selection in non-interactive mode
+  # The fzf mock returns no selection, so launch_project exits gracefully.
   run launch_project
-  # Returns 0 on empty selection (graceful exit)
   [[ "${status}" -eq 0 ]]
 }
 

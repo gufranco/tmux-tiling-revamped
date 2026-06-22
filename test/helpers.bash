@@ -250,6 +250,17 @@ command() {
   fi
 }
 
+# Mock fzf so tests never launch the real interactive picker. The real
+# `fzf --tmux` opens a tmux popup on whatever client is attached, which leaks
+# onto the developer's own session when the suite runs inside tmux, and blocks
+# waiting for input. The mock drains stdin and returns MOCK_FZF_SELECTION
+# (empty by default, meaning "no selection").
+fzf() {
+  cat >/dev/null 2>&1
+  [[ -n "${MOCK_FZF_SELECTION:-}" ]] && printf '%s\n' "${MOCK_FZF_SELECTION}"
+  return 0
+}
+
 load_lib() {
   local lib_file="$1"
   local real_lib_path="${BATS_TEST_DIRNAME}/../../src/lib/${lib_file}"
@@ -274,3 +285,4 @@ export -f tmux
 export -f date
 export -f stat
 export -f command
+export -f fzf

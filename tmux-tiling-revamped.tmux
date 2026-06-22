@@ -41,17 +41,28 @@ _check_tmux_version() {
 }
 
 _get_option() {
-  local value
-  value="$(tmux show-option -gqv "${1}" 2>/dev/null)"
-  if [[ -n "${value}" ]]; then
-    echo "${value}"
+  # Resolve a user option across three distinct states:
+  #   unset          -> the supplied default
+  #   set to a value -> that value
+  #   set to ""      -> empty, so a key option set to "" disables its binding
+  #
+  # Testing the value for emptiness cannot tell an unset option from one set to
+  # "", so both would collapse to the default and an explicit blank could never
+  # disable anything. Detect membership in the global option list instead, which
+  # separates set from unset on every tmux version.
+  local name="${1}" default="${2:-}"
+  if tmux show-options -g 2>/dev/null | grep -qE "^${name}( |$)"; then
+    tmux show-option -gqv "${name}" 2>/dev/null
   else
-    echo "${2:-}"
+    printf '%s\n' "${default}"
   fi
 }
 
 _bind() {
   local alt_keys="${1}" key="${2}" cmd="${3}"
+  # An empty key means the option was set to "" to disable this binding.
+  # Passing "" to bind-key fails with "unknown key:".
+  [[ -n "${key}" ]] || return 0
   if [[ "${alt_keys}" == "1" ]]; then
     tmux bind-key -n "M-${key}" run-shell "${cmd}"
   else
@@ -104,8 +115,8 @@ _setup_keybindings() {
   _bind "${alt_keys}" "${key_master_shrink}"  "${TILING_CMD} resize-master shrink"
   _bind "${alt_keys}" "${key_sync}"           "${TILING_CMD} sync"
 
-  # Mark uses command-prompt, so always prefix-based
-  tmux bind-key "${key_mark}" command-prompt \
+  # Mark uses command-prompt, so always prefix-based (empty key = disabled)
+  [[ -n "${key_mark}" ]] && tmux bind-key "${key_mark}" command-prompt \
     -p "Mark name:" "run-shell '${TILING_CMD} mark %%'"
   _bind "${alt_keys}" "${key_jump}" "${TILING_CMD} jump"
   _bind "${alt_keys}" "${key_scratchpad}" "${TILING_CMD} scratchpad"

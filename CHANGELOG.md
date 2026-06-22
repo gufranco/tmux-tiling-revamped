@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Setting a `@tiling_revamped_key_*` option to an empty string now disables that
+  binding, as the README documents. Option lookup treated an explicit blank the
+  same as unset and fell back to the default key, so keys such as `pick_layout`
+  could not be disabled.
+- A blank standard key no longer leaves the default bound or emits an "unknown
+  key" error. Empty keys are skipped during binding.
+
 ## [2.0.0] - 2026-04-04
 
 ### Added

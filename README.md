@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/gufranco/tmux-tiling-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/gufranco/tmux-tiling-revamped/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/github/license/gufranco/tmux-tiling-revamped?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue?style=flat-square)](CHANGELOG.md)
 [![tmux](https://img.shields.io/badge/tmux-3.2%2B-green?style=flat-square)](https://github.com/tmux/tmux)
 [![bash](https://img.shields.io/badge/bash-4.0%2B-blue?style=flat-square)](https://www.gnu.org/software/bash/)
 

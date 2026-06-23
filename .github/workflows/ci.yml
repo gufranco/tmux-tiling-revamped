@@ -133,7 +133,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
@@ -160,6 +160,26 @@ jobs:
             echo "WARN: $leaked leaked tmux test sockets found"
             rm -f /tmp/tiling-test-*
           fi
+
+  test-macos-gnu:
+    needs: lint
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install tmux, bats, and GNU tools
+        run: brew install bats-core tmux coreutils gawk gnu-sed grep
+
+      - name: Run tests with GNU tools on PATH
+        run: |
+          gnubin="$(brew --prefix coreutils)/libexec/gnubin"
+          gnubin="${gnubin}:$(brew --prefix gnu-sed)/libexec/gnubin"
+          gnubin="${gnubin}:$(brew --prefix grep)/libexec/gnubin"
+          gnubin="${gnubin}:$(brew --prefix gawk)/libexec/gnubin"
+          export PATH="${gnubin}:${PATH}"
+          awk --version | head -1
+          make test
 
   release:
     needs: [lint, test]

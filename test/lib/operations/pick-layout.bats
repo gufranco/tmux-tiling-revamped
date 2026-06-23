@@ -234,3 +234,111 @@ teardown() {
   [[ "${TILING_PREVIEW_MONOCLE}" == *"┌"* ]]
   [[ "${TILING_PREVIEW_DECK}" == *"┌"* ]]
 }
+
+@test "pick-layout.sh - _fzf_supports_tmux_popup accepts a new fzf version" {
+  fzf() { echo "0.50.0 (brew)"; }
+  export -f fzf
+  run _fzf_supports_tmux_popup
+  [ "${status}" -eq 0 ]
+}
+
+@test "pick-layout.sh - _fzf_supports_tmux_popup rejects an old fzf version" {
+  fzf() { echo "0.40.0"; }
+  export -f fzf
+  run _fzf_supports_tmux_popup
+  [ "${status}" -ne 0 ]
+}
+
+@test "pick-layout.sh - _fzf_supports_tmux_popup fails when version is empty" {
+  fzf() { return 1; }
+  export -f fzf
+  run _fzf_supports_tmux_popup
+  [ "${status}" -ne 0 ]
+}
+
+@test "pick-layout.sh - picker errors when fzf is too old" {
+  _fzf_supports_tmux_popup() { return 1; }
+  export -f _fzf_supports_tmux_popup
+  run _pick_with_fzf_tmux
+  [ "${status}" -eq 1 ]
+}
+
+@test "pick-layout.sh - picker returns the selection and adds a current header" {
+  _fzf_supports_tmux_popup() { return 0; }
+  get_current_layout() { echo "dwindle"; }
+  fzf() { echo "grid"; }
+  export -f _fzf_supports_tmux_popup get_current_layout fzf
+  run _pick_with_fzf_tmux
+  [ "${status}" -eq 0 ]
+  [[ "${output}" == "grid" ]]
+}
+
+@test "pick-layout.sh - picker works with no current layout" {
+  _fzf_supports_tmux_popup() { return 0; }
+  get_current_layout() { echo ""; }
+  fzf() { echo "spiral"; }
+  export -f _fzf_supports_tmux_popup get_current_layout fzf
+  run _pick_with_fzf_tmux
+  [ "${status}" -eq 0 ]
+  [[ "${output}" == "spiral" ]]
+}
+
+@test "pick-layout.sh - picker propagates fzf cancellation" {
+  _fzf_supports_tmux_popup() { return 0; }
+  get_current_layout() { echo ""; }
+  fzf() { return 130; }
+  export -f _fzf_supports_tmux_popup get_current_layout fzf
+  run _pick_with_fzf_tmux
+  [ "${status}" -eq 130 ]
+}
+
+@test "pick-layout.sh - picker returns 1 on fzf error" {
+  _fzf_supports_tmux_popup() { return 0; }
+  get_current_layout() { echo ""; }
+  fzf() { return 2; }
+  export -f _fzf_supports_tmux_popup get_current_layout fzf
+  run _pick_with_fzf_tmux
+  [ "${status}" -eq 1 ]
+}
+
+@test "pick-layout.sh - pick_layout returns 0 on cancellation" {
+  _pick_with_fzf_tmux() { return 130; }
+  export -f _pick_with_fzf_tmux
+  run pick_layout
+  [ "${status}" -eq 0 ]
+}
+
+@test "pick-layout.sh - pick_layout returns 0 on empty selection" {
+  _pick_with_fzf_tmux() { echo ""; return 0; }
+  export -f _pick_with_fzf_tmux
+  run pick_layout
+  [ "${status}" -eq 0 ]
+}
+
+@test "pick-layout.sh - pick_layout errors on an unknown layout" {
+  _pick_with_fzf_tmux() { echo "bogus"; return 0; }
+  export -f _pick_with_fzf_tmux
+  run pick_layout
+  [ "${status}" -eq 1 ]
+}
+
+@test "pick-layout.sh - pick_layout dispatches every layout" {
+  apply_layout_dwindle() { :; }
+  apply_layout_spiral() { :; }
+  apply_layout_grid() { :; }
+  apply_layout_main_vertical() { :; }
+  apply_layout_main_horizontal() { :; }
+  apply_layout_main_center() { :; }
+  apply_layout_monocle() { :; }
+  apply_layout_deck() { :; }
+  export -f apply_layout_dwindle apply_layout_spiral apply_layout_grid
+  export -f apply_layout_main_vertical apply_layout_main_horizontal
+  export -f apply_layout_main_center apply_layout_monocle apply_layout_deck
+  local L
+  for L in dwindle spiral grid main-vertical main-horizontal main-center monocle deck; do
+    eval "_pick_with_fzf_tmux() { echo '${L}'; return 0; }"
+    export -f _pick_with_fzf_tmux
+    run pick_layout
+    [ "${status}" -eq 0 ]
+  done
+}

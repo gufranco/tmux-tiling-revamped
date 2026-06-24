@@ -110,6 +110,3 @@ teardown() {
   [[ "${output}" == "40x50,0,0,1" ]]
 }
 
-@test "main-center.sh - preview variable updated to show balanced layout" {
-  [[ "${TILING_PREVIEW_MAIN_CENTER}" == *"Balanced"* ]]
-}

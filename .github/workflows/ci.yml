@@ -61,7 +61,6 @@ jobs:
 
       - name: Check constants exhaustiveness
         run: |
-          fail=0
           while IFS= read -r opt; do
             if ! grep -q "$opt" src/lib/utils/constants.sh; then
               echo "WARN: $opt used in source but not in constants.sh"
@@ -98,7 +97,6 @@ jobs:
 
       - name: Check README-to-code sync
         run: |
-          fail=0
           for cmd in balance equalize rotate flip promote circulate autosplit focus-resize resize-master sync swap cycle pick undo workspace move-to-workspace project swap-pick validate info doctor restore-layouts help; do
             if ! grep -q "\"${cmd}\"" README.md 2>/dev/null && ! grep -q "\`${cmd}\`" README.md 2>/dev/null; then
               echo "WARN: command '$cmd' not found in README"
@@ -107,7 +105,6 @@ jobs:
 
       - name: Check help text sync
         run: |
-          fail=0
           while IFS= read -r cmd; do
             if ! grep -q "$cmd" src/tiling.sh; then
               true  # dispatcher commands use different format
@@ -155,7 +152,7 @@ jobs:
       - name: Check for tmux server leaks
         if: always()
         run: |
-          leaked=$(ls /tmp/tiling-test-* 2>/dev/null | wc -l | tr -d ' ')
+          leaked=$(find /tmp -maxdepth 1 -name 'tiling-test-*' 2>/dev/null | wc -l | tr -d ' ')
           if (( leaked > 0 )); then
             echo "WARN: $leaked leaked tmux test sockets found"
             rm -f /tmp/tiling-test-*
@@ -181,8 +178,32 @@ jobs:
           awk --version | head -1
           make test
 
+  coverage:
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats tmux python3
+
+      - name: Build and install kcov
+        run: |
+          sudo apt-get install -y -qq cmake binutils-dev libcurl4-openssl-dev \
+            libdw-dev libiberty-dev zlib1g-dev libssl-dev g++
+          git clone --depth 1 https://github.com/SimonKagstrom/kcov.git /tmp/kcov
+          cmake -S /tmp/kcov -B /tmp/kcov/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/kcov/build -j"$(nproc)"
+          sudo cmake --install /tmp/kcov/build
+
+      - name: Measure coverage and enforce threshold
+        run: make coverage
+
   release:
-    needs: [lint, test]
+    needs: [lint, test, coverage]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

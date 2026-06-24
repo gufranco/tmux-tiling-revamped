@@ -30,6 +30,7 @@ source "${LIB_DIR}/layouts/main-vertical.sh"
 source "${LIB_DIR}/layouts/main-horizontal.sh"
 source "${LIB_DIR}/layouts/monocle.sh"
 source "${LIB_DIR}/layouts/deck.sh"
+source "${LIB_DIR}/layouts/previews.sh"
 
 # Logical grouping: BSP layouts first, then standard, main, special layouts
 PICK_LAYOUTS=(

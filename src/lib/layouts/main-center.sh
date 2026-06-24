@@ -136,17 +136,6 @@ apply_layout_main_center() {
   set_current_layout "main-center"
 }
 
-TILING_PREVIEW_MAIN_CENTER='Main-Center (6 panes)
-┌─────────┬───────────────────┬─────────┐
-│    2    │                   │    4    │
-├─────────┤                   ├─────────┤
-│    3    │         1         │    5    │
-│         │                   ├─────────┤
-│         │                   │    6    │
-└─────────┴───────────────────┴─────────┘
-Balanced sides, wide center pane'
-export TILING_PREVIEW_MAIN_CENTER
-
 export -f _main_center_vstack
 export -f _main_center_build
 export -f apply_layout_main_center

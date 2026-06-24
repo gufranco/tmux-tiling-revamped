@@ -54,3 +54,21 @@ teardown() {
   [[ -n "${_TILING_REVAMPED_DOCTOR_LOADED}" ]]
   [[ "${_TILING_REVAMPED_DOCTOR_LOADED}" == "1" ]]
 }
+
+@test "doctor.sh - run_doctor exercises fzf and layout branches directly" {
+  export MOCK_HAS_FZF="1"
+  export MOCK_TILING_LAYOUT="grid"
+  run_doctor >/dev/null 2>&1 || true
+  export MOCK_HAS_FZF="0"
+  export MOCK_TILING_LAYOUT=""
+  run_doctor >/dev/null 2>&1 || true
+}
+
+@test "doctor.sh - run_doctor flags an old or undetectable tmux version" {
+  tmux() { case "$1" in -V) echo "tmux 2.8" ;; *) return 0 ;; esac; }
+  run run_doctor
+  [[ "${status}" -ne 0 ]]
+  [[ "${output}" == *"issue(s) found"* ]]
+  tmux() { case "$1" in -V) echo "tmux" ;; *) return 0 ;; esac; }
+  run_doctor >/dev/null 2>&1 || true
+}

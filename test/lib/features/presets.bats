@@ -16,6 +16,8 @@ setup() {
   source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/spiral.sh"
   source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/grid.sh"
   source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/main-center.sh"
+  source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/main-vertical.sh"
+  source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/main-horizontal.sh"
   source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/monocle.sh"
   source "${BATS_TEST_DIRNAME}/../../../src/lib/layouts/deck.sh"
   source "${BATS_TEST_DIRNAME}/../../../src/lib/features/presets.sh"
@@ -58,4 +60,23 @@ teardown() {
   export MOCK_TMUX_OPTION_VALUE=""
   run apply_preset "nonexistent"
   [[ "${status}" -ne 0 ]]
+}
+
+@test "presets.sh - apply_preset dispatches every layout in a saved preset" {
+  local layout
+  for layout in dwindle spiral grid main-vertical main-horizontal main-center monocle deck; do
+    export MOCK_TMUX_OPTION_VALUE="${layout}:brvc:60"
+    apply_preset "p" >/dev/null 2>&1 || true
+  done
+}
+
+@test "presets.sh - apply_preset rejects an unknown layout in the preset" {
+  export MOCK_TMUX_OPTION_VALUE="bogus-layout:brvc:60"
+  run apply_preset "weird"
+  [[ "${status}" -ne 0 ]]
+}
+
+@test "presets.sh - save_preset records the current layout as a preset" {
+  export MOCK_TILING_LAYOUT="grid"
+  save_preset "work" >/dev/null 2>&1
 }

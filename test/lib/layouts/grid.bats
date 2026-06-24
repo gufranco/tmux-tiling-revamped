@@ -76,6 +76,3 @@ teardown() {
   apply_layout_grid >/dev/null 2>&1
 }
 
-@test "grid.sh - TILING_PREVIEW_GRID is exported and non-empty" {
-  [[ -n "${TILING_PREVIEW_GRID}" ]]
-}

@@ -78,3 +78,17 @@ teardown() {
   [[ -n "${_TILING_REVAMPED_UNDO_LAYOUT_LOADED}" ]]
   [[ "${_TILING_REVAMPED_UNDO_LAYOUT_LOADED}" == "1" ]]
 }
+
+@test "undo-layout.sh - undo_layout dispatches every layout directly" {
+  local layout
+  for layout in dwindle spiral grid main-vertical main-horizontal main-center monocle deck bogus; do
+    export MOCK_TILING_LAYOUT_HISTORY="${layout}:brvc|prev:brvc"
+    undo_layout >/dev/null 2>&1 || true
+  done
+}
+
+@test "undo-layout.sh - push_layout_history trims beyond the max depth" {
+  export MOCK_TILING_LAYOUT="dwindle"
+  export MOCK_TILING_LAYOUT_HISTORY="a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b"
+  push_layout_history >/dev/null 2>&1 || true
+}

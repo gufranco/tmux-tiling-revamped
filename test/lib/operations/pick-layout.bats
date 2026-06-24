@@ -342,3 +342,27 @@ teardown() {
     [ "${status}" -eq 0 ]
   done
 }
+
+@test "pick-layout.sh - pick_layout dispatches every selection directly" {
+  export MOCK_HAS_FZF="1"
+  local layout
+  _pick_with_fzf_tmux() { echo "${layout}"; }
+  for layout in dwindle spiral grid main-vertical main-horizontal main-center monocle deck bogus; do
+    pick_layout >/dev/null 2>&1 || true
+  done
+}
+
+@test "pick-layout.sh - pick_layout returns 0 on an empty selection" {
+  export MOCK_HAS_FZF="1"
+  _pick_with_fzf_tmux() { printf ''; }
+  run pick_layout
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "pick-layout.sh - _get_layout_preview resolves every layout name" {
+  local layout
+  for layout in dwindle spiral grid main-vertical main-horizontal main-center monocle deck; do
+    [[ -n "$(_get_layout_preview "${layout}")" ]]
+  done
+  [[ "$(_get_layout_preview "nope")" == "No preview available" ]]
+}

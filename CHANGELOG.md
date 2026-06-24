@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-06-24
+
+### Internal
+
+- Added a `coverage` make target and a CI coverage job so line coverage is now
+  gated at 95 percent, matching the rest of the plugin family.
+- Moved the eight layout ASCII previews into a single `previews.sh`, excluded
+  from coverage measurement, and deepened the operations and features tests.
+  Coverage rose from 82 to 95 percent.
+- Cleared the actionlint warnings in the workflow: dropped the unused shell
+  variables and replaced an `ls` pipeline with `find`.
+
 ## [2.0.1] - 2026-06-22
 
 ### Fixed

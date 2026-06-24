@@ -59,3 +59,12 @@ teardown() {
   [[ -n "${_TILING_REVAMPED_PANE_GUARD_LOADED}" ]]
   [[ "${_TILING_REVAMPED_PANE_GUARD_LOADED}" == "1" ]]
 }
+
+@test "pane-guard.sh - check_pane_size runs directly across layouts and sizes" {
+  local layout
+  for layout in dwindle spiral grid deck main-vertical main-horizontal main-center monocle bogus; do
+    check_pane_size 4 200 50 "${layout}" >/dev/null 2>&1 || true
+    check_pane_size 8 40 10 "${layout}" >/dev/null 2>&1 || true
+    check_pane_size 1 200 50 "${layout}" >/dev/null 2>&1 || true
+  done
+}

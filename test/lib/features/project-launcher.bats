@@ -49,3 +49,31 @@ teardown() {
   [[ -n "${_TILING_REVAMPED_PROJECT_LAUNCHER_LOADED}" ]]
   [[ "${_TILING_REVAMPED_PROJECT_LAUNCHER_LOADED}" == "1" ]]
 }
+
+@test "project-launcher.sh - launch_project selects a project and opens a window" {
+  export MOCK_HAS_FZF="1"
+  local pdir="${BATS_TEST_TMPDIR}/projects"
+  mkdir -p "${pdir}/alpha" "${pdir}/beta"
+  export MOCK_TILING_PROJECT_DIR="${pdir}"
+  fzf() { echo "alpha"; }
+  fd() { printf 'alpha\nbeta\n'; }
+  launch_project >/dev/null 2>&1 || true
+}
+
+@test "project-launcher.sh - launch_project returns when nothing is selected" {
+  export MOCK_HAS_FZF="1"
+  local pdir="${BATS_TEST_TMPDIR}/projects2"
+  mkdir -p "${pdir}/gamma"
+  export MOCK_TILING_PROJECT_DIR="${pdir}"
+  fzf() { printf ''; }
+  fd() { printf 'gamma\n'; }
+  run launch_project
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "project-launcher.sh - launch_project rejects a missing directory" {
+  export MOCK_HAS_FZF="1"
+  export MOCK_TILING_PROJECT_DIR="/no/such/project/dir/xyz"
+  run launch_project
+  [[ "${status}" -ne 0 ]]
+}

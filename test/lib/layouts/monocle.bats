@@ -83,6 +83,3 @@ teardown() {
   apply_layout_monocle >/dev/null 2>&1
 }
 
-@test "monocle.sh - TILING_PREVIEW_MONOCLE is exported and non-empty" {
-  [[ -n "${TILING_PREVIEW_MONOCLE}" ]]
-}

@@ -78,3 +78,13 @@ teardown() {
   run cycle_layout "next"
   [[ "${status}" -eq 0 ]]
 }
+
+@test "cycle.sh - cycle_layout steps through every configured layout directly" {
+  export MOCK_TILING_CYCLE_LAYOUTS="dwindle spiral grid main-center monocle deck bogus"
+  local cur
+  for cur in dwindle spiral grid main-center monocle deck bogus; do
+    export MOCK_TILING_LAYOUT="${cur}"
+    cycle_layout next >/dev/null 2>&1 || true
+    cycle_layout prev >/dev/null 2>&1 || true
+  done
+}

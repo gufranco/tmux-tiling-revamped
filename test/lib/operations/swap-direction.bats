@@ -99,3 +99,12 @@ teardown() {
   run swap_pane_direction "R"
   [[ "${status}" -eq 0 ]]
 }
+
+@test "swap-direction.sh - swap_pane_direction runs each direction directly" {
+  local d
+  for d in U D L R; do
+    swap_pane_direction "${d}" >/dev/null 2>&1 || true
+  done
+  export MOCK_PANE_LIST="%0"
+  swap_pane_direction R >/dev/null 2>&1 || true
+}

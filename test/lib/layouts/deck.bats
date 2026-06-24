@@ -70,6 +70,3 @@ teardown() {
   apply_layout_deck >/dev/null 2>&1
 }
 
-@test "deck.sh - TILING_PREVIEW_DECK is exported and non-empty" {
-  [[ -n "${TILING_PREVIEW_DECK}" ]]
-}

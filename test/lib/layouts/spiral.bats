@@ -194,10 +194,6 @@ teardown() {
   apply_layout_spiral "brvs" >/dev/null 2>&1
 }
 
-@test "spiral.sh - TILING_PREVIEW_SPIRAL is exported and non-empty" {
-  [[ -n "${TILING_PREVIEW_SPIRAL}" ]]
-}
-
 @test "spiral.sh - spiral and dwindle share first two pane positions" {
   local corner_tb='' spiral_tb='+' corner_lr='' spiral_lr='+' modulo_hv=1
 

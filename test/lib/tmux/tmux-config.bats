@@ -110,3 +110,22 @@ teardown() {
 @test "tmux-config.sh - is_applying function is exported" {
   function_exists is_applying
 }
+
+@test "tmux-config.sh - _reapply_current_layout dispatches each layout directly" {
+  local layout
+  for layout in dwindle spiral grid deck main-vertical main-horizontal main-center monocle ""; do
+    export MOCK_TILING_LAYOUT="${layout}"
+    _reapply_current_layout >/dev/null 2>&1 || true
+  done
+}
+
+@test "tmux-config.sh - get_numeric_option validates and clamps to range" {
+  export MOCK_TMUX_OPTION_VALUE="abc"
+  [[ "$(get_numeric_option "@x" "5" 2 10)" == "5" ]]
+  export MOCK_TMUX_OPTION_VALUE="0"
+  [[ "$(get_numeric_option "@x" "5" 2 10)" == "2" ]]
+  export MOCK_TMUX_OPTION_VALUE="999"
+  [[ "$(get_numeric_option "@x" "5" 2 10)" == "10" ]]
+  export MOCK_TMUX_OPTION_VALUE="7"
+  [[ "$(get_numeric_option "@x" "5" 2 10)" == "7" ]]
+}

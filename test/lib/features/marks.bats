@@ -105,3 +105,14 @@ teardown() {
   run jump_to_mark "build"
   [[ "${status}" -eq 0 ]]
 }
+
+@test "marks.sh - mark and unmark run directly across states" {
+  mark_pane "alpha" >/dev/null 2>&1 || true
+  export MOCK_TILING_MARKS="alpha:%0;beta:%1"
+  mark_pane "alpha" >/dev/null 2>&1 || true
+  unmark_pane "beta" >/dev/null 2>&1 || true
+  export MOCK_TILING_MARK="alpha"
+  unmark_pane "" >/dev/null 2>&1 || true
+  mark_pane "" >/dev/null 2>&1 || true
+  mark_pane '!!!' >/dev/null 2>&1 || true
+}

@@ -6,8 +6,8 @@ body:
     attributes:
       value: |
         Before asking, please check:
-        - [README](https://github.com/gufranco/tmux-tiling-revamped#readme)
-        - [Existing issues](https://github.com/gufranco/tmux-tiling-revamped/issues?q=is%3Aissue)
+        - [README](https://github.com/tmux-revamped/tmux-tiling-revamped#readme)
+        - [Existing issues](https://github.com/tmux-revamped/tmux-tiling-revamped/issues?q=is%3Aissue)
         - Run `tiling.sh help` for a command reference
 
   - type: textarea

@@ -3,7 +3,7 @@
 ## Getting Started
 
 ```bash
-git clone https://github.com/gufranco/tmux-tiling-revamped.git
+git clone https://github.com/tmux-revamped/tmux-tiling-revamped.git
 cd tmux-tiling-revamped
 bats --recursive test/
 ```

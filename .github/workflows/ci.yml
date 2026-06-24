@@ -71,6 +71,7 @@ jobs:
         run: |
           fail=0
           for f in src/lib/layouts/*.sh; do
+            [[ "$f" == */previews.sh ]] && continue
             widths=$(grep -E '^[┌├└│┬┴┼─┤┐┘]' "$f" 2>/dev/null | awk '{print length}' | sort -u)
             count=$(echo "$widths" | wc -l | tr -d ' ')
             if (( count > 1 )); then

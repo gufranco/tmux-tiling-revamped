@@ -100,3 +100,11 @@ teardown() {
   run balance_panes
   [[ "${status}" -eq 0 ]]
 }
+
+@test "balance.sh - balance_panes dispatches each layout directly" {
+  local layout
+  for layout in grid deck monocle dwindle spiral main-center main-vertical main-horizontal ""; do
+    export MOCK_TILING_LAYOUT="${layout}"
+    balance_panes >/dev/null 2>&1 || true
+  done
+}

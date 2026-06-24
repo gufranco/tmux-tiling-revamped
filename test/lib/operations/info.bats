@@ -68,3 +68,13 @@ teardown() {
   [[ -n "${_TILING_REVAMPED_INFO_LOADED}" ]]
   [[ "${_TILING_REVAMPED_INFO_LOADED}" == "1" ]]
 }
+
+@test "info.sh - decode_orientation and show_info cover the state branches" {
+  [[ -n "$(_decode_orientation "tlhs")" ]]
+  [[ -n "$(_decode_orientation "brvc")" ]]
+  export MOCK_TILING_LAYOUT_HISTORY="a:b|c:d"
+  show_info >/dev/null
+  export MOCK_TILING_LAYOUT=""
+  export MOCK_TILING_LAYOUT_HISTORY=""
+  show_info >/dev/null
+}

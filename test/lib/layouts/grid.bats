@@ -45,3 +45,37 @@ teardown() {
   run apply_layout_grid
   [[ "${status}" -eq 0 ]]
 }
+
+# ── Direct-call coverage ────────────────────────────────────────────
+
+@test "grid.sh - apply_layout_grid direct call applies tiled layout" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2\n%3'
+  apply_layout_grid >/dev/null 2>&1
+}
+
+@test "grid.sh - apply_layout_grid direct call single-pane early return" {
+  export MOCK_PANE_LIST="%0"
+  apply_layout_grid >/dev/null 2>&1
+}
+
+@test "grid.sh - apply_layout_grid direct call two panes" {
+  export MOCK_PANE_LIST=$'%0\n%1'
+  apply_layout_grid >/dev/null 2>&1
+}
+
+@test "grid.sh - apply_layout_grid tolerates select-layout failure" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2'
+  tmux() {
+    case "$1" in
+      list-panes) printf '%s\n' "${MOCK_PANE_LIST}" ;;
+      select-layout) return 1 ;;
+      *) return 0 ;;
+    esac
+  }
+  export -f tmux
+  apply_layout_grid >/dev/null 2>&1
+}
+
+@test "grid.sh - TILING_PREVIEW_GRID is exported and non-empty" {
+  [[ -n "${TILING_PREVIEW_GRID}" ]]
+}

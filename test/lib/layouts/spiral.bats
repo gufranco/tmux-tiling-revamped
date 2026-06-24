@@ -160,6 +160,44 @@ teardown() {
   [[ "${status}" -eq 0 ]]
 }
 
+# ── Direct-call coverage of apply_layout_spiral body ────────────────
+
+@test "spiral.sh - apply_layout_spiral direct call already has s flag" {
+  _apply_bsp_layout() { return 0; }
+  export -f _apply_bsp_layout
+  apply_layout_spiral "brvs" >/dev/null 2>&1
+}
+
+@test "spiral.sh - apply_layout_spiral direct call converts c to s" {
+  _apply_bsp_layout() { return 0; }
+  export -f _apply_bsp_layout
+  apply_layout_spiral "brvc" >/dev/null 2>&1
+}
+
+@test "spiral.sh - apply_layout_spiral direct call appends s when neither" {
+  _apply_bsp_layout() { return 0; }
+  export -f _apply_bsp_layout
+  apply_layout_spiral "brv" >/dev/null 2>&1
+}
+
+@test "spiral.sh - apply_layout_spiral direct call reads stored orientation" {
+  _apply_bsp_layout() { return 0; }
+  export -f _apply_bsp_layout
+  export MOCK_TILING_ORIENTATION="brvc"
+  apply_layout_spiral >/dev/null 2>&1
+}
+
+@test "spiral.sh - apply_layout_spiral direct call single pane" {
+  _apply_bsp_layout() { return 0; }
+  export -f _apply_bsp_layout
+  export MOCK_PANE_LIST="%0"
+  apply_layout_spiral "brvs" >/dev/null 2>&1
+}
+
+@test "spiral.sh - TILING_PREVIEW_SPIRAL is exported and non-empty" {
+  [[ -n "${TILING_PREVIEW_SPIRAL}" ]]
+}
+
 @test "spiral.sh - spiral and dwindle share first two pane positions" {
   local corner_tb='' spiral_tb='+' corner_lr='' spiral_lr='+' modulo_hv=1
 

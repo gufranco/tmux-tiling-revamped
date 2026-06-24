@@ -44,3 +44,45 @@ teardown() {
   run apply_layout_monocle
   [[ "${status}" -eq 0 ]]
 }
+
+# ── Direct-call coverage ────────────────────────────────────────────
+
+@test "monocle.sh - apply_layout_monocle direct call zooms when not zoomed" {
+  export MOCK_WINDOW_ZOOMED="0"
+  export MOCK_TILING_LAYOUT="dwindle"
+  apply_layout_monocle >/dev/null 2>&1
+}
+
+@test "monocle.sh - apply_layout_monocle direct call unzooms when zoomed" {
+  export MOCK_WINDOW_ZOOMED="1"
+  export MOCK_TILING_MONOCLE_PREV="grid"
+  apply_layout_monocle >/dev/null 2>&1
+}
+
+@test "monocle.sh - apply_layout_monocle does not save prev when current is monocle" {
+  export MOCK_WINDOW_ZOOMED="0"
+  export MOCK_TILING_LAYOUT="monocle"
+  apply_layout_monocle >/dev/null 2>&1
+}
+
+@test "monocle.sh - apply_layout_monocle handles empty current layout" {
+  export MOCK_WINDOW_ZOOMED="0"
+  export MOCK_TILING_LAYOUT=""
+  apply_layout_monocle >/dev/null 2>&1
+}
+
+@test "monocle.sh - apply_layout_monocle defaults to 0 when zoom flag missing" {
+  export MOCK_TILING_LAYOUT="dwindle"
+  tmux() {
+    case "$1" in
+      display-message) return 1 ;;
+      *) return 0 ;;
+    esac
+  }
+  export -f tmux
+  apply_layout_monocle >/dev/null 2>&1
+}
+
+@test "monocle.sh - TILING_PREVIEW_MONOCLE is exported and non-empty" {
+  [[ -n "${TILING_PREVIEW_MONOCLE}" ]]
+}

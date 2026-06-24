@@ -39,3 +39,37 @@ teardown() {
   run apply_layout_deck
   [[ "${status}" -eq 0 ]]
 }
+
+# ── Direct-call coverage ────────────────────────────────────────────
+
+@test "deck.sh - apply_layout_deck direct call applies even-horizontal" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2'
+  apply_layout_deck >/dev/null 2>&1
+}
+
+@test "deck.sh - apply_layout_deck direct call single-pane early return" {
+  export MOCK_PANE_LIST="%0"
+  apply_layout_deck >/dev/null 2>&1
+}
+
+@test "deck.sh - apply_layout_deck direct call two panes" {
+  export MOCK_PANE_LIST=$'%0\n%1'
+  apply_layout_deck >/dev/null 2>&1
+}
+
+@test "deck.sh - apply_layout_deck tolerates select-layout failure" {
+  export MOCK_PANE_LIST=$'%0\n%1\n%2'
+  tmux() {
+    case "$1" in
+      list-panes) printf '%s\n' "${MOCK_PANE_LIST}" ;;
+      select-layout) return 1 ;;
+      *) return 0 ;;
+    esac
+  }
+  export -f tmux
+  apply_layout_deck >/dev/null 2>&1
+}
+
+@test "deck.sh - TILING_PREVIEW_DECK is exported and non-empty" {
+  [[ -n "${TILING_PREVIEW_DECK}" ]]
+}

@@ -13,7 +13,7 @@ teardown() {
 
 @test "constants.sh - TILING_REVAMPED_VERSION is set" {
   [[ -n "${TILING_REVAMPED_VERSION}" ]]
-  [[ "${TILING_REVAMPED_VERSION}" == "2.1.0" ]]
+  [[ "${TILING_REVAMPED_VERSION}" == "2.2.0" ]]
 }
 
 @test "constants.sh - TILING_DEFAULT_ORIENTATION is set" {
@@ -114,6 +114,21 @@ teardown() {
   [[ "${TILING_DEFAULT_PICK_HEIGHT}" == "40%" ]]
   [[ -n "${TILING_DEFAULT_PICK_PREVIEW_WIDTH}" ]]
   [[ "${TILING_DEFAULT_PICK_PREVIEW_WIDTH}" == "60%" ]]
+}
+
+@test "constants.sh - pass-2 feature option constants are set" {
+  [[ "${OPT_DYNAMIC_LAYOUT}" == "@tiling_revamped_dynamic_layout" ]]
+  [[ "${OPT_APP_RULES}" == "@tiling_revamped_app_rules" ]]
+  [[ "${OPT_FOCUS_HISTORY}" == "@tiling_revamped_focus_history" ]]
+  [[ "${OPT_FOCUS_STACK}" == "@tiling_revamped_focus_stack" ]]
+  [[ "${OPT_FOCUS_POS}" == "@tiling_revamped_focus_pos" ]]
+  [[ "${OPT_FOCUS_MAX}" == "@tiling_revamped_focus_max" ]]
+  [[ "${OPT_FOCUS_NAV}" == "@tiling_revamped_focus_nav" ]]
+  [[ "${OPT_KEY_FOCUS_BACK}" == "@tiling_revamped_key_focus_back" ]]
+  [[ "${OPT_KEY_FOCUS_FORWARD}" == "@tiling_revamped_key_focus_forward" ]]
+  [[ "${OPT_KEY_PANE_JUMP}" == "@tiling_revamped_key_pane_jump" ]]
+  [[ "${TILING_DEFAULT_FOCUS_MAX}" == "20" ]]
+  [[ "${TILING_DEFAULT_JUMP_WIDTH}" == "70%" ]]
 }
 
 @test "constants.sh - source guard prevents double loading" {

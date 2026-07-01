@@ -89,6 +89,10 @@ source "${PLUGIN_DIR}/src/lib/features/status.sh"
 source "${PLUGIN_DIR}/src/lib/operations/help-overlay.sh"
 source "${PLUGIN_DIR}/src/lib/operations/swap-biggest.sh"
 source "${PLUGIN_DIR}/src/lib/operations/smart-borders.sh"
+source "${PLUGIN_DIR}/src/lib/features/dynamic-layout.sh"
+source "${PLUGIN_DIR}/src/lib/features/app-rules.sh"
+source "${PLUGIN_DIR}/src/lib/features/focus-history.sh"
+source "${PLUGIN_DIR}/src/lib/operations/pane-jumper.sh"
 
 _handle_hook() {
   local event="${1:-}"
@@ -118,6 +122,12 @@ _handle_hook() {
 
   # Check if auto-apply is enabled for this window
   is_auto_apply_enabled || return 0
+
+  # Dynamic layout by pane count overrides stored-layout reapplication.
+  if _dynamic_layout_enabled; then
+    apply_dynamic_layout
+    return 0
+  fi
 
   local current_layout
   current_layout=$(get_current_layout)
@@ -185,6 +195,12 @@ main() {
     project)    launch_project ;;
     swap-pick)  swap_pick ;;
     swap-biggest) swap_biggest ;;
+    dynamic-layout) apply_dynamic_layout ;;
+    app-rules)      apply_app_rules ;;
+    focus-record)   focus_history_record ;;
+    focus-back)     focus_history_back ;;
+    focus-forward)  focus_history_forward ;;
+    pane-jump)      pane_jumper ;;
     smart-borders) smart_borders ;;
     status)     layout_status ;;
     help-overlay) show_help ;;
@@ -225,6 +241,7 @@ Operations:
   undo             Revert to previous layout
   redo             Re-apply an undone layout
   smart-borders    Hide pane borders when only one pane remains
+  pane-jump        Jump to any pane across sessions (fzf popup)
 
 Features:
   mark <name>      Label a pane
@@ -237,6 +254,13 @@ Features:
   move-to-workspace <N>  Move pane to window N
   back-and-forth   Toggle between current and last window
   project          Open project in new window (fzf)
+  focus-back       Step back through the focused-pane history
+  focus-forward    Step forward through the focused-pane history
+
+Automation:
+  dynamic-layout   Apply a layout chosen by live pane count
+  app-rules        Auto-assign an action to a new pane by command
+  focus-record     Record the focused pane (auto-apply hook)
 
 Diagnostics:
   info             Show current layout state

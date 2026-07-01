@@ -4,7 +4,7 @@
 [[ -n "${_TILING_REVAMPED_CONSTANTS_LOADED:-}" ]] && return 0
 _TILING_REVAMPED_CONSTANTS_LOADED=1
 
-readonly TILING_REVAMPED_VERSION="2.1.0"
+readonly TILING_REVAMPED_VERSION="2.2.0"
 
 # Default orientation flags for BSP layouts
 # Format: [t|b][l|r][h|v][c|s]
@@ -104,3 +104,30 @@ readonly OPT_BORDER_STATUS="@tiling_revamped_border_status"
 # Workspace back-and-forth
 readonly OPT_LAST_WINDOW="@tiling_revamped_last_window"
 readonly OPT_KEY_BACK_AND_FORTH="@tiling_revamped_key_back_and_forth"
+
+# Dynamic layout by pane count
+readonly OPT_DYNAMIC_LAYOUT="@tiling_revamped_dynamic_layout"
+
+# App-aware tiling rules
+readonly OPT_APP_RULES="@tiling_revamped_app_rules"
+readonly OPT_PANE_FLOAT="@tiling_revamped_float"
+readonly OPT_PANE_SCRATCHPAD="@tiling_revamped_scratchpad"
+
+# Focus history stack
+readonly OPT_FOCUS_HISTORY="@tiling_revamped_focus_history"
+readonly OPT_FOCUS_STACK="@tiling_revamped_focus_stack"
+readonly OPT_FOCUS_POS="@tiling_revamped_focus_pos"
+readonly OPT_FOCUS_MAX="@tiling_revamped_focus_max"
+readonly OPT_FOCUS_NAV="@tiling_revamped_focus_nav"
+readonly OPT_KEY_FOCUS_BACK="@tiling_revamped_key_focus_back"
+readonly OPT_KEY_FOCUS_FORWARD="@tiling_revamped_key_focus_forward"
+readonly TILING_DEFAULT_FOCUS_MAX="20"
+
+# Global pane jumper
+readonly OPT_KEY_PANE_JUMP="@tiling_revamped_key_pane_jump"
+readonly OPT_JUMP_WIDTH="@tiling_revamped_jump_width"
+readonly OPT_JUMP_HEIGHT="@tiling_revamped_jump_height"
+readonly OPT_JUMP_PREVIEW_WIDTH="@tiling_revamped_jump_preview_width"
+readonly TILING_DEFAULT_JUMP_WIDTH="70%"
+readonly TILING_DEFAULT_JUMP_HEIGHT="60%"
+readonly TILING_DEFAULT_JUMP_PREVIEW_WIDTH="60%"

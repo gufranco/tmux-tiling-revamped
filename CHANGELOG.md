@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-06-30
+
+### Added
+
+- Dynamic layout by pane count. Map pane-count thresholds to layouts with
+  `@tiling_revamped_dynamic_layout` (for example `1:monocle 2:main-vertical
+  3:dwindle 5:grid`). The auto-apply hook selects the layout whose threshold is
+  the greatest value not exceeding the current pane count.
+- App-aware tiling rules. List newline-delimited `command:action` rules in
+  `@tiling_revamped_app_rules` to auto-assign an action (`master`, `float`, or
+  `scratchpad`) to a new pane based on its running command.
+- Focus history stack. A capped back/forward stack of focused pane ids lives in
+  a window option. Enable it with `@tiling_revamped_focus_history` and walk it
+  with the focus-back (`[`) and focus-forward (`]`) keys. Closed panes are
+  skipped when navigating.
+- Global pane jumper. Press `P` for an fzf popup over every pane across all
+  sessions with capture-pane previews. It degrades to `choose-tree` when fzf or
+  a popup-capable tmux is unavailable.
+
 ## [2.1.0] - 2026-06-30
 
 ### Added

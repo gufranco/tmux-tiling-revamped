@@ -101,6 +101,9 @@ _setup_keybindings() {
   local key_redo;           key_redo=$(          _get_option "@tiling_revamped_key_redo"            "r")
   local key_help;           key_help=$(          _get_option "@tiling_revamped_key_help"            "?")
   local key_swap_biggest;   key_swap_biggest=$(  _get_option "@tiling_revamped_key_swap_biggest"    "=")
+  local key_focus_back;     key_focus_back=$(    _get_option "@tiling_revamped_key_focus_back"     "[")
+  local key_focus_forward;  key_focus_forward=$( _get_option "@tiling_revamped_key_focus_forward"  "]")
+  local key_pane_jump;      key_pane_jump=$(     _get_option "@tiling_revamped_key_pane_jump"      "P")
 
   _bind "${alt_keys}" "${key_dwindle}"        "${TILING_CMD} layout dwindle"
   _bind "${alt_keys}" "${key_spiral}"         "${TILING_CMD} layout spiral"
@@ -144,6 +147,13 @@ _setup_keybindings() {
 
   # Swap-with-biggest binding (empty key = disabled)
   [[ -n "${key_swap_biggest}" ]] && _bind "${alt_keys}" "${key_swap_biggest}" "${TILING_CMD} swap-biggest"
+
+  # Focus-history navigation bindings (empty key = disabled)
+  [[ -n "${key_focus_back}" ]] && _bind "${alt_keys}" "${key_focus_back}" "${TILING_CMD} focus-back"
+  [[ -n "${key_focus_forward}" ]] && _bind "${alt_keys}" "${key_focus_forward}" "${TILING_CMD} focus-forward"
+
+  # Global pane jumper binding (empty key = disabled)
+  [[ -n "${key_pane_jump}" ]] && _bind "${alt_keys}" "${key_pane_jump}" "${TILING_CMD} pane-jump"
 }
 
 _setup_hooks() {
@@ -155,6 +165,8 @@ _setup_hooks() {
   tmux set-hook -gu "after-new-window[100]" 2>/dev/null || true
   tmux set-hook -gu "pane-focus-in[100]" 2>/dev/null || true
   tmux set-hook -gu "after-split-window[110]" 2>/dev/null || true
+  tmux set-hook -gu "after-split-window[130]" 2>/dev/null || true
+  tmux set-hook -gu "pane-focus-in[130]" 2>/dev/null || true
   tmux set-hook -gu "after-kill-pane[110]" 2>/dev/null || true
   tmux set-hook -gu "pane-exited[110]" 2>/dev/null || true
 
@@ -191,6 +203,22 @@ _setup_hooks() {
       "run-shell '${TILING_CMD} smart-borders'"
     tmux set-hook -ga "pane-exited[110]" \
       "run-shell '${TILING_CMD} smart-borders'"
+  fi
+
+  # App-aware tiling rules: assign an action to each newly created pane
+  local app_rules
+  app_rules=$(_get_option "@tiling_revamped_app_rules" "")
+  if [[ -n "${app_rules}" ]]; then
+    tmux set-hook -ga "after-split-window[130]" \
+      "run-shell '${TILING_CMD} app-rules'"
+  fi
+
+  # Focus history: record every pane focus for back/forward navigation
+  local focus_history
+  focus_history=$(_get_option "@tiling_revamped_focus_history" "0")
+  if [[ "${focus_history}" == "1" ]]; then
+    tmux set-hook -ga "pane-focus-in[130]" \
+      "run-shell '${TILING_CMD} focus-record'"
   fi
 
   local focus_resize

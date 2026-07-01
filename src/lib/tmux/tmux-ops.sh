@@ -86,6 +86,10 @@ get_window_height() {
   tmux display-message -p '#{window_height}' 2>/dev/null || echo "0"
 }
 
+get_window_panes() {
+  tmux display-message -p '#{window_panes}' 2>/dev/null || echo "0"
+}
+
 export -f get_tmux_option
 export -f get_window_option
 export -f get_pane_option
@@ -99,3 +103,4 @@ export -f get_pane_width
 export -f get_pane_height
 export -f get_window_width
 export -f get_window_height
+export -f get_window_panes

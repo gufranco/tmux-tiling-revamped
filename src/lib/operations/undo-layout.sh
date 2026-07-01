@@ -10,20 +10,16 @@ source "${LIB_DIR}/tmux/tmux-config.sh"
 
 TILING_MAX_UNDO_DEPTH=10
 
-# push_layout_history: save current layout and orientation before a change.
-# Stores as a pipe-separated stack: "layout:flags|layout:flags|..."
-push_layout_history() {
-  local current_layout
-  current_layout=$(get_current_layout)
-  [[ -z "${current_layout}" ]] && return 0
-
-  local current_flags
-  current_flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
-
-  local entry="${current_layout}:${current_flags}"
+# _stack_push: prepend an entry onto a pipe-separated window-option stack,
+# trimming the stack to TILING_MAX_UNDO_DEPTH entries.  Empty entries are
+# ignored so a missing current layout never pollutes the stack.
+_stack_push() {
+  local option="${1}"
+  local entry="${2}"
+  [[ -z "${entry}" ]] && return 0
 
   local history
-  history=$(get_window_option "@tiling_revamped_layout_history" "")
+  history=$(get_window_option "${option}" "")
 
   if [[ -n "${history}" ]]; then
     history="${entry}|${history}"
@@ -31,7 +27,6 @@ push_layout_history() {
     history="${entry}"
   fi
 
-  # Trim to max depth
   local -a parts
   IFS='|' read -ra parts <<< "${history}"
   if (( ${#parts[@]} > TILING_MAX_UNDO_DEPTH )); then
@@ -44,33 +39,26 @@ push_layout_history() {
     history="${trimmed}"
   fi
 
-  set_window_option "@tiling_revamped_layout_history" "${history}"
+  set_window_option "${option}" "${history}"
 }
 
-# undo_layout: pop the most recent layout from history and re-apply it.
-undo_layout() {
-  local history
-  history=$(get_window_option "@tiling_revamped_layout_history" "")
-
-  [[ -z "${history}" ]] && return 0
-
-  # Pop the first entry
-  local entry="${history%%|*}"
-  local remaining="${history#*|}"
-  [[ "${remaining}" == "${history}" ]] && remaining=""
-
-  # Update history with the remaining stack
-  set_window_option "@tiling_revamped_layout_history" "${remaining}"
-
-  local layout="${entry%%:*}"
-  local flags="${entry#*:}"
-
+# _current_entry: render the window's current "layout:flags" entry, or empty.
+_current_entry() {
+  local layout
+  layout=$(get_current_layout)
   [[ -z "${layout}" ]] && return 0
 
-  # Set orientation flags before applying
-  [[ -n "${flags}" ]] && set_window_option "@tiling_revamped_orientation" "${flags}"
+  local flags
+  flags=$(get_window_option "@tiling_revamped_orientation" "brvc")
+  printf '%s:%s\n' "${layout}" "${flags}"
+}
 
-  # Apply without pushing to history (would create infinite loop)
+# _apply_layout_entry: re-apply a "layout" with the given orientation "flags".
+# Returns 1 for an unknown layout name.
+_apply_layout_entry() {
+  local layout="${1}"
+  local flags="${2}"
+
   case "${layout}" in
     dwindle)         _apply_bsp_layout "false" "${flags}"; set_current_layout "dwindle" ;;
     spiral)          _apply_bsp_layout "true" "${flags}"; set_current_layout "spiral" ;;
@@ -84,5 +72,85 @@ undo_layout() {
   esac
 }
 
+# push_layout_history: save current layout and orientation before a change.
+# A fresh layout change also invalidates the redo stack.  During undo/redo
+# replay (TILING_REVAMPED_REPLAYING=1) this is a no-op so the stacks stay sane.
+push_layout_history() {
+  [[ "${TILING_REVAMPED_REPLAYING:-0}" == "1" ]] && return 0
+
+  local entry
+  entry=$(_current_entry)
+  [[ -z "${entry}" ]] && return 0
+
+  _stack_push "@tiling_revamped_layout_history" "${entry}"
+  set_window_option "@tiling_revamped_layout_redo" ""
+}
+
+# undo_layout: pop the most recent history entry and re-apply it, pushing the
+# layout left behind onto the redo stack.
+undo_layout() {
+  local history
+  history=$(get_window_option "@tiling_revamped_layout_history" "")
+  [[ -z "${history}" ]] && return 0
+
+  local entry="${history%%|*}"
+  local remaining="${history#*|}"
+  [[ "${remaining}" == "${history}" ]] && remaining=""
+  set_window_option "@tiling_revamped_layout_history" "${remaining}"
+
+  local layout="${entry%%:*}"
+  local flags="${entry#*:}"
+  [[ -z "${layout}" ]] && return 0
+
+  local prev_entry
+  prev_entry=$(_current_entry)
+
+  [[ -n "${flags}" ]] && set_window_option "@tiling_revamped_orientation" "${flags}"
+
+  local rc
+  TILING_REVAMPED_REPLAYING=1
+  _apply_layout_entry "${layout}" "${flags}"
+  rc=$?
+  TILING_REVAMPED_REPLAYING=0
+
+  (( rc == 0 )) && _stack_push "@tiling_revamped_layout_redo" "${prev_entry}"
+  return "${rc}"
+}
+
+# redo_layout: pop the most recent redo entry and re-apply it, pushing the
+# layout left behind back onto the history stack so undo works again.
+redo_layout() {
+  local redo
+  redo=$(get_window_option "@tiling_revamped_layout_redo" "")
+  [[ -z "${redo}" ]] && return 0
+
+  local entry="${redo%%|*}"
+  local remaining="${redo#*|}"
+  [[ "${remaining}" == "${redo}" ]] && remaining=""
+  set_window_option "@tiling_revamped_layout_redo" "${remaining}"
+
+  local layout="${entry%%:*}"
+  local flags="${entry#*:}"
+  [[ -z "${layout}" ]] && return 0
+
+  local prev_entry
+  prev_entry=$(_current_entry)
+
+  [[ -n "${flags}" ]] && set_window_option "@tiling_revamped_orientation" "${flags}"
+
+  local rc
+  TILING_REVAMPED_REPLAYING=1
+  _apply_layout_entry "${layout}" "${flags}"
+  rc=$?
+  TILING_REVAMPED_REPLAYING=0
+
+  (( rc == 0 )) && _stack_push "@tiling_revamped_layout_history" "${prev_entry}"
+  return "${rc}"
+}
+
+export -f _stack_push
+export -f _current_entry
+export -f _apply_layout_entry
 export -f push_layout_history
 export -f undo_layout
+export -f redo_layout

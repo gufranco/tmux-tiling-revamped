@@ -92,3 +92,142 @@ teardown() {
   export MOCK_TILING_LAYOUT_HISTORY="a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b"
   push_layout_history >/dev/null 2>&1 || true
 }
+
+@test "undo-layout.sh - redo_layout function exists" {
+  function_exists redo_layout
+}
+
+@test "undo-layout.sh - _stack_push function exists" {
+  function_exists _stack_push
+}
+
+@test "undo-layout.sh - _current_entry function exists" {
+  function_exists _current_entry
+}
+
+@test "undo-layout.sh - _apply_layout_entry function exists" {
+  function_exists _apply_layout_entry
+}
+
+@test "undo-layout.sh - redo_layout returns 0 with empty redo stack" {
+  export MOCK_TILING_LAYOUT_REDO=""
+  run redo_layout
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "undo-layout.sh - redo_layout succeeds with a valid redo entry" {
+  export MOCK_TILING_LAYOUT_REDO="grid:brvc"
+  run redo_layout
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "undo-layout.sh - redo_layout succeeds with a multi-entry redo stack" {
+  export MOCK_TILING_LAYOUT_REDO="spiral:brvs|dwindle:brvc"
+  run redo_layout
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "undo-layout.sh - redo_layout fails with an unknown layout" {
+  export MOCK_TILING_LAYOUT_REDO="bogus:brvc"
+  run redo_layout
+  [[ "${status}" -eq 1 ]]
+}
+
+@test "undo-layout.sh - redo_layout returns 0 when the entry has no layout" {
+  export MOCK_TILING_LAYOUT_REDO=":brvc"
+  run redo_layout
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "undo-layout.sh - _current_entry renders layout and flags" {
+  export MOCK_TILING_LAYOUT="dwindle"
+  export MOCK_TILING_ORIENTATION="brvc"
+  run _current_entry
+  [[ "${output}" == "dwindle:brvc" ]]
+}
+
+@test "undo-layout.sh - _current_entry is empty with no layout" {
+  export MOCK_TILING_LAYOUT=""
+  run _current_entry
+  [[ -z "${output}" ]]
+}
+
+@test "undo-layout.sh - _apply_layout_entry dispatches every known layout" {
+  local layout
+  for layout in dwindle spiral grid main-vertical main-horizontal main-center monocle deck; do
+    run _apply_layout_entry "${layout}" "brvc"
+    [[ "${status}" -eq 0 ]]
+  done
+}
+
+@test "undo-layout.sh - _apply_layout_entry fails on an unknown layout" {
+  run _apply_layout_entry "nope" "brvc"
+  [[ "${status}" -eq 1 ]]
+}
+
+@test "undo-layout.sh - _stack_push ignores an empty entry" {
+  set_window_option() { echo "set $1" >> "${TEST_TMPDIR}/sp.txt"; }
+  export -f set_window_option
+  run _stack_push "@tiling_revamped_layout_redo" ""
+  [[ "${status}" -eq 0 ]]
+  [[ ! -f "${TEST_TMPDIR}/sp.txt" ]]
+}
+
+@test "undo-layout.sh - _stack_push trims to the max depth" {
+  export MOCK_TILING_LAYOUT_REDO="a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b|a:b"
+  local cap="${TEST_TMPDIR}/trim.txt"
+  set_window_option() { printf '%s\n' "$2" > "${cap}"; }
+  export -f set_window_option
+  run _stack_push "@tiling_revamped_layout_redo" "new:x"
+  [[ "${status}" -eq 0 ]]
+  local entries
+  entries=$(tr '|' '\n' < "${cap}" | grep -c .)
+  [[ "${entries}" -eq 10 ]]
+  grep -q '^new:x|' "${cap}"
+}
+
+@test "undo-layout.sh - undo_layout records the prior layout on the redo stack" {
+  export MOCK_TILING_LAYOUT_HISTORY="grid:brvc"
+  export MOCK_TILING_LAYOUT="dwindle"
+  export MOCK_TILING_ORIENTATION="brvc"
+  local cap="${TEST_TMPDIR}/redo.txt"
+  set_window_option() { printf '%s|%s\n' "$1" "$2" >> "${cap}"; }
+  export -f set_window_option
+  run undo_layout
+  [[ "${status}" -eq 0 ]]
+  grep -q '@tiling_revamped_layout_redo|dwindle:brvc' "${cap}"
+}
+
+@test "undo-layout.sh - a fresh layout change clears the redo stack" {
+  export MOCK_TILING_LAYOUT="dwindle"
+  export MOCK_TILING_ORIENTATION="brvc"
+  local cap="${TEST_TMPDIR}/clear.txt"
+  set_window_option() { printf '%s=[%s]\n' "$1" "$2" >> "${cap}"; }
+  export -f set_window_option
+  run push_layout_history
+  [[ "${status}" -eq 0 ]]
+  grep -q '@tiling_revamped_layout_redo=\[\]' "${cap}"
+}
+
+@test "undo-layout.sh - push_layout_history is a no-op during replay" {
+  export TILING_REVAMPED_REPLAYING="1"
+  export MOCK_TILING_LAYOUT="dwindle"
+  local cap="${TEST_TMPDIR}/replay.txt"
+  set_window_option() { echo "$1" >> "${cap}"; }
+  export -f set_window_option
+  run push_layout_history
+  [[ "${status}" -eq 0 ]]
+  [[ ! -f "${cap}" ]]
+}
+
+@test "undo-layout.sh - redo_layout pushes the prior layout back onto history" {
+  export MOCK_TILING_LAYOUT_REDO="grid:brvc"
+  export MOCK_TILING_LAYOUT="spiral"
+  export MOCK_TILING_ORIENTATION="brvs"
+  local cap="${TEST_TMPDIR}/hist.txt"
+  set_window_option() { printf '%s|%s\n' "$1" "$2" >> "${cap}"; }
+  export -f set_window_option
+  run redo_layout
+  [[ "${status}" -eq 0 ]]
+  grep -q '@tiling_revamped_layout_history|spiral:brvs' "${cap}"
+}

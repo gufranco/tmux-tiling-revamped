@@ -85,6 +85,10 @@ source "${PLUGIN_DIR}/src/lib/operations/swap-pick.sh"
 source "${PLUGIN_DIR}/src/lib/operations/info.sh"
 source "${PLUGIN_DIR}/src/lib/operations/doctor.sh"
 source "${PLUGIN_DIR}/src/lib/utils/pane-guard.sh"
+source "${PLUGIN_DIR}/src/lib/features/status.sh"
+source "${PLUGIN_DIR}/src/lib/operations/help-overlay.sh"
+source "${PLUGIN_DIR}/src/lib/operations/swap-biggest.sh"
+source "${PLUGIN_DIR}/src/lib/operations/smart-borders.sh"
 
 _handle_hook() {
   local event="${1:-}"
@@ -174,10 +178,16 @@ main() {
     cycle)      cycle_layout "${1:-next}" ;;
     pick)       pick_layout ;;
     undo)       undo_layout ;;
+    redo)       redo_layout ;;
     workspace)  switch_workspace "${1:-1}" ;;
     move-to-workspace) move_to_workspace "${1:-1}" ;;
+    back-and-forth) workspace_back_and_forth ;;
     project)    launch_project ;;
     swap-pick)  swap_pick ;;
+    swap-biggest) swap_biggest ;;
+    smart-borders) smart_borders ;;
+    status)     layout_status ;;
+    help-overlay) show_help ;;
     validate)   validate_layout "${1:-check}" ;;
     info)       show_info ;;
     doctor)     run_doctor ;;
@@ -209,9 +219,12 @@ Operations:
   sync             Toggle synchronize-panes
   swap [dir]       Swap with neighbor (U/D/L/R)
   swap-pick        Swap with fzf-selected pane
+  swap-biggest     Swap focused pane with the largest pane
   pick             Layout picker (fzf popup)
   cycle [dir]      Cycle through layout list (next/prev)
   undo             Revert to previous layout
+  redo             Re-apply an undone layout
+  smart-borders    Hide pane borders when only one pane remains
 
 Features:
   mark <name>      Label a pane
@@ -222,10 +235,13 @@ Features:
   preset apply [n] Apply a saved preset (fzf if no name)
   workspace <N>    Switch to window N (create if missing)
   move-to-workspace <N>  Move pane to window N
+  back-and-forth   Toggle between current and last window
   project          Open project in new window (fzf)
 
 Diagnostics:
   info             Show current layout state
+  status           Print the active layout for the status line
+  help-overlay     Show resolved keybindings in a popup (tmux 3.2+)
   doctor           Check environment health
   validate [fix]   Check layout metadata consistency
   restore-layouts  Re-apply all stored layouts

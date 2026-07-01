@@ -4,7 +4,7 @@
 [[ -n "${_TILING_REVAMPED_CONSTANTS_LOADED:-}" ]] && return 0
 _TILING_REVAMPED_CONSTANTS_LOADED=1
 
-readonly TILING_REVAMPED_VERSION="2.0.2"
+readonly TILING_REVAMPED_VERSION="2.1.0"
 
 # Default orientation flags for BSP layouts
 # Format: [t|b][l|r][h|v][c|s]
@@ -84,3 +84,23 @@ readonly OPT_KEY_PROJECT="@tiling_revamped_key_project"
 readonly TILING_DEFAULT_PICK_WIDTH="60%"
 readonly TILING_DEFAULT_PICK_HEIGHT="40%"
 readonly TILING_DEFAULT_PICK_PREVIEW_WIDTH="60%"
+
+# Redo (companion to undo)
+readonly OPT_LAYOUT_REDO="@tiling_revamped_layout_redo"
+readonly OPT_KEY_REDO="@tiling_revamped_key_redo"
+
+# Help overlay
+readonly OPT_KEY_HELP="@tiling_revamped_key_help"
+readonly OPT_HELP_WIDTH="@tiling_revamped_help_width"
+readonly OPT_HELP_HEIGHT="@tiling_revamped_help_height"
+
+# Swap with biggest pane
+readonly OPT_KEY_SWAP_BIGGEST="@tiling_revamped_key_swap_biggest"
+
+# Smart borders
+readonly OPT_SMART_BORDERS="@tiling_revamped_smart_borders"
+readonly OPT_BORDER_STATUS="@tiling_revamped_border_status"
+
+# Workspace back-and-forth
+readonly OPT_LAST_WINDOW="@tiling_revamped_last_window"
+readonly OPT_KEY_BACK_AND_FORTH="@tiling_revamped_key_back_and_forth"

@@ -98,6 +98,9 @@ _setup_keybindings() {
   local key_swap_right;     key_swap_right=$(    _get_option "@tiling_revamped_key_swap_right"      "")
   local key_pick_layout;    key_pick_layout=$(   _get_option "@tiling_revamped_key_pick_layout"    "p")
   local key_undo;           key_undo=$(          _get_option "@tiling_revamped_key_undo"            "u")
+  local key_redo;           key_redo=$(          _get_option "@tiling_revamped_key_redo"            "r")
+  local key_help;           key_help=$(          _get_option "@tiling_revamped_key_help"            "?")
+  local key_swap_biggest;   key_swap_biggest=$(  _get_option "@tiling_revamped_key_swap_biggest"    "=")
 
   _bind "${alt_keys}" "${key_dwindle}"        "${TILING_CMD} layout dwindle"
   _bind "${alt_keys}" "${key_spiral}"         "${TILING_CMD} layout spiral"
@@ -132,6 +135,15 @@ _setup_keybindings() {
 
   # Undo binding (empty key = disabled)
   [[ -n "${key_undo}" ]] && _bind "${alt_keys}" "${key_undo}" "${TILING_CMD} undo"
+
+  # Redo binding (empty key = disabled)
+  [[ -n "${key_redo}" ]] && _bind "${alt_keys}" "${key_redo}" "${TILING_CMD} redo"
+
+  # Help overlay binding (empty key = disabled)
+  [[ -n "${key_help}" ]] && _bind "${alt_keys}" "${key_help}" "${TILING_CMD} help-overlay"
+
+  # Swap-with-biggest binding (empty key = disabled)
+  [[ -n "${key_swap_biggest}" ]] && _bind "${alt_keys}" "${key_swap_biggest}" "${TILING_CMD} swap-biggest"
 }
 
 _setup_hooks() {
@@ -142,6 +154,9 @@ _setup_hooks() {
   tmux set-hook -gu "window-resized[100]" 2>/dev/null || true
   tmux set-hook -gu "after-new-window[100]" 2>/dev/null || true
   tmux set-hook -gu "pane-focus-in[100]" 2>/dev/null || true
+  tmux set-hook -gu "after-split-window[110]" 2>/dev/null || true
+  tmux set-hook -gu "after-kill-pane[110]" 2>/dev/null || true
+  tmux set-hook -gu "pane-exited[110]" 2>/dev/null || true
 
   local auto_apply
   auto_apply=$(_get_option "@tiling_revamped_auto_apply" "1")
@@ -163,6 +178,19 @@ _setup_hooks() {
   if [[ -n "${default_layout}" ]]; then
     tmux set-hook -ga "after-new-window[100]" \
       "run-shell '${TILING_CMD} hook new-window'"
+  fi
+
+  # Smart borders: hide pane chrome on a single-pane window
+  local smart_borders
+  smart_borders=$(_get_option "@tiling_revamped_smart_borders" "0")
+
+  if [[ "${smart_borders}" == "1" ]]; then
+    tmux set-hook -ga "after-split-window[110]" \
+      "run-shell '${TILING_CMD} smart-borders'"
+    tmux set-hook -ga "after-kill-pane[110]" \
+      "run-shell '${TILING_CMD} smart-borders'"
+    tmux set-hook -ga "pane-exited[110]" \
+      "run-shell '${TILING_CMD} smart-borders'"
   fi
 
   local focus_resize
@@ -225,6 +253,13 @@ _setup_workspaces() {
     tmux bind-key -n "M-0" run-shell "${TILING_CMD} workspace 10"
     [[ -n "${shift_zero}" ]] && \
       tmux bind-key -n "M-${shift_zero}" run-shell "${TILING_CMD} move-to-workspace 10"
+  fi
+
+  # Back-and-forth toggle between the current and last window (empty = disabled)
+  local key_back_and_forth
+  key_back_and_forth=$(_get_option "@tiling_revamped_key_back_and_forth" "Tab")
+  if [[ -n "${key_back_and_forth}" ]] && [[ "${alt_keys}" == "1" ]]; then
+    tmux bind-key -n "M-${key_back_and_forth}" run-shell "${TILING_CMD} back-and-forth"
   fi
 }
 

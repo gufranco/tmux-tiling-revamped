@@ -81,6 +81,17 @@ teardown() {
   [[ "${output}" == "50" ]]
 }
 
+@test "tmux-ops.sh - get_window_panes returns pane count" {
+  export MOCK_WINDOW_PANES="4"
+  run get_window_panes
+  [[ "${output}" == "4" ]]
+}
+
+@test "tmux-ops.sh - get_window_panes function is exported" {
+  run bash -c "source '${BATS_TEST_DIRNAME}/../../../src/lib/tmux/tmux-ops.sh'; declare -F get_window_panes"
+  [[ "${status}" -eq 0 ]]
+}
+
 @test "tmux-ops.sh - get_pane_count returns count" {
   export MOCK_PANE_LIST=$'%0\n%1\n%2'
   run get_pane_count
@@ -101,4 +112,21 @@ teardown() {
 
 @test "tmux-ops.sh - get_current_pane function is exported" {
   function_exists get_current_pane
+}
+
+@test "tmux-ops.sh - get_pane_option reads a pane-scoped option" {
+  export MOCK_TMUX_OPTION_VALUE="paneval"
+  run get_pane_option "@tiling_revamped_test" "default" "%1"
+  [[ "${status}" -eq 0 ]]
+  [[ "${output}" == "paneval" ]]
+}
+
+@test "tmux-ops.sh - get_pane_width accepts a target pane" {
+  run get_pane_width "%1"
+  [[ "${status}" -eq 0 ]]
+}
+
+@test "tmux-ops.sh - get_pane_height accepts a target pane" {
+  run get_pane_height "%1"
+  [[ "${status}" -eq 0 ]]
 }

@@ -128,6 +128,10 @@ tmux() {
           echo "${MOCK_TILING_DEFAULT_LAYOUT:-}" ;;
         @tiling_revamped_layout_history)
           echo "${MOCK_TILING_LAYOUT_HISTORY:-}" ;;
+        @tiling_revamped_layout_redo)
+          echo "${MOCK_TILING_LAYOUT_REDO:-}" ;;
+        @tiling_revamped_last_window)
+          echo "${MOCK_TILING_LAST_WINDOW:-}" ;;
         @tiling_revamped_split_ratio)
           echo "${MOCK_TILING_SPLIT_RATIO:-50}" ;;
         @tiling_revamped_project_dir)
@@ -167,6 +171,7 @@ tmux() {
               '#{window_id}')  echo "${MOCK_WINDOW_ID:-@0}" ;;
               '#{window_width}') echo "${MOCK_WINDOW_WIDTH:-200}" ;;
               '#{window_height}') echo "${MOCK_WINDOW_HEIGHT:-50}" ;;
+              '#{window_panes}') echo "${MOCK_WINDOW_PANES:-1}" ;;
               '#{window_zoomed_flag}') echo "${MOCK_WINDOW_ZOOMED:-0}" ;;
               *) echo "" ;;
             esac

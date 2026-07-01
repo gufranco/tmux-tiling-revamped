@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-06-30
+
+### Added
+
+- Status-line layout indicator. The active layout name lives in the
+  `@tiling_revamped_layout` window option, and a new `status` command renders it
+  with a per-layout glyph for use in `status-right`.
+- Help overlay. Press `?` to see every resolved keybinding in a popup that
+  reflects your custom keys. Falls back to a message on tmux older than 3.2.
+- Swap with biggest pane. The `swap-biggest` command swaps the focused pane with
+  the largest pane by area, bound to `=` by default.
+- Smart borders. With `@tiling_revamped_smart_borders` enabled, pane border
+  chrome hides while a window holds one pane and returns when a second appears.
+- Layout redo. The `redo` command re-applies an undone layout, bound to `r`. The
+  redo stack clears on a fresh layout change.
+- Workspace back-and-forth. One key toggles between the current window and the
+  one most recently left.
+
 ## [2.0.2] - 2026-06-24
 
 ### Internal

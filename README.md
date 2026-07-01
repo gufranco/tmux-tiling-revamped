@@ -2,14 +2,14 @@
 
 <h1>tmux-tiling-revamped</h1>
 
-<strong>BSP tiling window management for tmux. Eight layouts, seventeen operations, zero dependencies.</strong>
+<strong>BSP tiling window management for tmux. Eight layouts, nineteen operations, zero dependencies.</strong>
 
 <br>
 <br>
 
 [![CI](https://github.com/tmux-revamped/tmux-tiling-revamped/actions/workflows/ci.yml/badge.svg)](https://github.com/tmux-revamped/tmux-tiling-revamped/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/github/license/tmux-revamped/tmux-tiling-revamped?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.2-blue?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue?style=flat-square)](CHANGELOG.md)
 [![tmux](https://img.shields.io/badge/tmux-3.2%2B-green?style=flat-square)](https://github.com/tmux/tmux)
 [![bash](https://img.shields.io/badge/bash-4.0%2B-blue?style=flat-square)](https://www.gnu.org/software/bash/)
 
@@ -17,7 +17,7 @@
 
 ---
 
-**8** layouts  ·  **16** BSP orientations  ·  **17** operations  ·  **30+** commands  ·  **528** tests  ·  **zero** dependencies
+**8** layouts  ·  **16** BSP orientations  ·  **19** operations  ·  **36+** commands  ·  **691** tests  ·  **zero** dependencies
 
 <table>
 <tr>
@@ -298,6 +298,9 @@ All keybindings use the tmux prefix. Every key is configurable via `@tiling_reva
 | `g` | Toggle scratchpad popup | `scratchpad` |
 | `p` | Open layout picker | `pick` |
 | `u` | Undo last layout change | `undo` |
+| `r` | Redo last undone layout | `redo` |
+| `=` | Swap focused pane with the largest | `swap-biggest` |
+| `?` | Show keybinding overlay | `help-overlay` |
 
 ## Configuration
 
@@ -328,6 +331,10 @@ All options use the `@tiling_revamped_` prefix.
 | `@tiling_revamped_pick_width` | `60%` | Layout picker popup width |
 | `@tiling_revamped_pick_height` | `40%` | Layout picker popup height |
 | `@tiling_revamped_pick_preview_width` | `60%` | Layout picker preview panel width |
+| `@tiling_revamped_smart_borders` | `0` | Hide pane borders while a window holds a single pane |
+| `@tiling_revamped_border_status` | `top` | Border status restored when a second pane appears |
+| `@tiling_revamped_help_width` | `50%` | Help overlay popup width |
+| `@tiling_revamped_help_height` | `60%` | Help overlay popup height |
 | `@tiling_revamped_min_pane_width` | `10` | Minimum pane width before layout refuses to apply |
 | `@tiling_revamped_min_pane_height` | `5` | Minimum pane height before layout refuses to apply |
 | `@tiling_revamped_enable_logging` | `0` | Write debug logs to `~/.tmux/tiling-logs/` |
@@ -355,6 +362,10 @@ set -g @tiling_revamped_key_jump            "j"
 set -g @tiling_revamped_key_scratchpad      "g"
 set -g @tiling_revamped_key_pick_layout     "p"
 set -g @tiling_revamped_key_undo            "u"
+set -g @tiling_revamped_key_redo            "r"
+set -g @tiling_revamped_key_help            "?"
+set -g @tiling_revamped_key_swap_biggest    "="
+set -g @tiling_revamped_key_back_and_forth  "Tab"
 set -g @tiling_revamped_key_project         ""
 
 # Directional swap (disabled by default, set keys to enable)
@@ -437,6 +448,26 @@ A 4-character string controlling how the BSP tree cascades. Each character is on
 
 Default: `brvc` (bottom-right, vertical, corner).
 
+### Status Line
+
+The active layout name is stored in the `@tiling_revamped_layout` window option, so the raw name drops straight into the status line:
+
+```tmux
+set -g status-right "#{@tiling_revamped_layout} | %H:%M"
+```
+
+For an icon plus the name, call the `status` command, which maps each layout to a glyph:
+
+```tmux
+set -g status-right "#(~/.tmux/plugins/tmux-tiling-revamped/src/tiling.sh status) | %H:%M"
+```
+
+The glyph map covers all eight layouts. An unset layout prints nothing, and an unknown name falls back to the bare name.
+
+### Help Overlay
+
+Press `?` to open a popup listing every resolved keybinding, reflecting your custom keys rather than the defaults. The overlay needs tmux 3.2 or newer for `display-popup`; on older tmux it prints a short message instead.
+
 ## CLI
 
 The dispatcher at `src/tiling.sh` accepts direct commands for scripting and custom bindings.
@@ -467,6 +498,9 @@ The dispatcher at `src/tiling.sh` accepts direct commands for scripting and cust
 ./src/tiling.sh pick
 ./src/tiling.sh cycle next
 ./src/tiling.sh undo
+./src/tiling.sh redo
+./src/tiling.sh swap-biggest
+./src/tiling.sh smart-borders
 
 # Features
 ./src/tiling.sh mark editor
@@ -476,10 +510,13 @@ The dispatcher at `src/tiling.sh` accepts direct commands for scripting and cust
 ./src/tiling.sh preset apply dev
 ./src/tiling.sh workspace 3
 ./src/tiling.sh move-to-workspace 5
+./src/tiling.sh back-and-forth
 ./src/tiling.sh project
 
 # Diagnostics
 ./src/tiling.sh info
+./src/tiling.sh status
+./src/tiling.sh help-overlay
 ./src/tiling.sh doctor
 ./src/tiling.sh validate fix
 ./src/tiling.sh restore-layouts

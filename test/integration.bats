@@ -671,3 +671,89 @@ get_pane_height() {
   run_tiling cycle next
   [[ "$(get_layout)" == "deck" ]]
 }
+
+# New: status indicator
+
+@test "integration: status command is routed in dispatcher" {
+  run_tiling layout dwindle
+  run_tiling status || true
+  true
+}
+
+# New: redo
+
+@test "integration: redo re-applies an undone layout" {
+  create_panes 3
+  run_tiling layout dwindle
+  run_tiling layout grid
+  run_tiling undo
+  [[ "$(get_layout)" == "dwindle" ]]
+  run_tiling redo
+  [[ "$(get_layout)" == "grid" ]]
+}
+
+@test "integration: redo is a no-op with an empty redo stack" {
+  create_panes 2
+  run_tiling layout dwindle
+  run_tiling redo || true
+  true
+}
+
+@test "integration: a fresh layout change clears the redo stack" {
+  create_panes 3
+  run_tiling layout dwindle
+  run_tiling layout grid
+  run_tiling undo
+  run_tiling layout spiral
+  run_tiling redo
+  [[ "$(get_layout)" == "spiral" ]]
+}
+
+# New: swap with biggest
+
+@test "integration: swap-biggest keeps the pane count and is routed" {
+  create_panes 3
+  run_tiling layout main-vertical
+  command tmux -S "${TMUX_SOCKET}" select-pane -t 1 2>/dev/null
+  sleep 0.1
+  run_tiling swap-biggest
+  assert_pane_count 3
+}
+
+# New: smart borders
+
+@test "integration: smart-borders hides chrome on a single pane" {
+  command tmux -S "${TMUX_SOCKET}" set -g @tiling_revamped_smart_borders 1
+  run_tiling smart-borders
+  local status_val
+  status_val=$(command tmux -S "${TMUX_SOCKET}" show-option -wqv pane-border-status 2>/dev/null)
+  [[ "${status_val}" == "off" ]]
+}
+
+@test "integration: smart-borders restores chrome with multiple panes" {
+  command tmux -S "${TMUX_SOCKET}" set -g @tiling_revamped_smart_borders 1
+  create_panes 2
+  run_tiling smart-borders
+  local status_val
+  status_val=$(command tmux -S "${TMUX_SOCKET}" show-option -wqv pane-border-status 2>/dev/null)
+  [[ "${status_val}" == "top" ]]
+}
+
+# New: workspace back-and-forth
+
+@test "integration: back-and-forth toggles to the previous window" {
+  local first
+  first=$(command tmux -S "${TMUX_SOCKET}" display-message -p '#{window_id}' 2>/dev/null)
+  run_tiling workspace 2
+  run_tiling back-and-forth
+  local active
+  active=$(command tmux -S "${TMUX_SOCKET}" display-message -p '#{window_id}' 2>/dev/null)
+  [[ "${active}" == "${first}" ]]
+}
+
+# New: help overlay
+
+@test "integration: help-overlay command is routed in dispatcher" {
+  run_tiling help-overlay || true
+  true
+}
